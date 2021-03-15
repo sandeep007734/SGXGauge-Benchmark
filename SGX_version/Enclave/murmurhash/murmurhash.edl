@@ -1,0 +1,12 @@
+enclave {
+
+    trusted {
+        public void ecall_compute_hash_x86_32([in, size = 1] const void *key, int len, uint32_t seed, [out, size = 10] void *out);
+
+        public void ecall_compute_hash_x86_128([in, size = 1] const void *key, int len, uint32_t seed, [out, size = 10] void *out);
+
+        public void ecall_compute_hash_x64_128([in, size = 1] const void *key, int len, uint32_t seed, [out, size = 10] void *out);
+
+    };
+
+};

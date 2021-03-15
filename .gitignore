@@ -1,0 +1,6 @@
+*_t*
+*_u*
+*.so
+app
+*.o
+.config_SIM_DEBUG_x64
