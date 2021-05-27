@@ -22,43 +22,42 @@
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 #include <string.h>
-//#include <sys/time.h>
-#include <unistd.h>
+// #include <unistd.h>
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-//#include <fcntl.h>
-#include <limits.h>
+// //#include <fcntl.h>
+// #include <limits.h>
 
-//#include <sys/vfs.h>
-#include <sys/types.h>
-//#include <dirent.h>
+// //#include <sys/vfs.h>
+// #include <sys/types.h>
+// //#include <dirent.h>
 
-//#include <sys/time.h>
-#include <assert.h>
-//#include <sys/stat.h>
-//#include <sys/mman.h>
-#include <inttypes.h>
+// //#include <sys/time.h>
+// #include <assert.h>
+// //#include <sys/stat.h>
+// //#include <sys/mman.h>
+// #include <inttypes.h>
 
-#ifndef DEFAULT_MODE
-#define DEFAULT_MODE 0777
-#endif
+// #ifndef DEFAULT_MODE
+// #define DEFAULT_MODE 0777
+// #endif
 
 #include "config.h"
 #include "murmur3.h"
 #include "hashjoin.h"
-#include "../Enclave.h"
+#include "Enclave.h"
 #include "Enclave_t.h"
 
 #ifdef _OPENMP
 #    include <omp.h>
 #endif
 
+ int myposix_memalign(void **memptr, size_t alignment, size_t size){
+     *memptr = malloc(size);
+     return 0;
+ }
 
 ///< this is a table element it has a key and a payload
 struct element
@@ -78,10 +77,10 @@ struct htelm
 ///< this function allocates mmeory with an alignment constraint
 static void allocate(void **memptr, size_t size, size_t align)
 {
-    printf(stderr,"allocating %zu MB memory with alignment %zu \n", size >> 20, align);
-    if (posix_memalign(memptr, align, size)) {
-        printf(stderr,"ENOMEM\n");
-        exit(1);
+    printf("allocating %zu MB memory with alignment %zu \n", size >> 20, align);
+    if (myposix_memalign(memptr, align, size)) {
+        // printf("ENOMEM\n");
+        return;
     }
     //*memptr = (uint8_t*) malloc(size);
     memset(*memptr, 0, size);

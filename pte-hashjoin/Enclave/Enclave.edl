@@ -7,7 +7,7 @@ enclave {
      *  [*]: implies to import all functions.
      */
     
-    from "Core-Library/hashjoin.edl" import *;
+    // from "Core-Library/hashjoin.edl" import *;
 
     /* 
      * ocall_print_string - invokes OCALL to display string buffer inside the enclave.
@@ -16,6 +16,10 @@ enclave {
      */
     untrusted {
         void ocall_print_string([in, string] const char *str);
+    };
+
+     trusted {
+        public int ecall_real_main(void);
     };
 
 };

@@ -36,7 +36,7 @@
 #define CONFIG_RAND_SEED 42
 
 ///< the size of the outer table in elements
-#define CONFIG_DEFAULT_OUTER_SIZE 1000000
+#define CONFIG_DEFAULT_OUTER_SIZE 100000
 
 ///< the size of the inner table in elements
 #define CONFIG_DEFAULT_INNER_SIZE 100000
