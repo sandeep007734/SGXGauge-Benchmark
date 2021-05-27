@@ -25,24 +25,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+//#include <sys/time.h>
 #include <unistd.h>
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <limits.h>
 
-#include <sys/vfs.h>
+//#include <sys/vfs.h>
 #include <sys/types.h>
-#include <dirent.h>
+//#include <dirent.h>
 
-#include <sys/time.h>
+//#include <sys/time.h>
 #include <assert.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
+//#include <sys/stat.h>
+//#include <sys/mman.h>
 #include <inttypes.h>
 
 #ifndef DEFAULT_MODE
@@ -51,6 +51,9 @@
 
 #include "config.h"
 #include "murmur3.h"
+#include "hashjoin.h"
+#include "../Enclave.h"
+#include "Enclave_t.h"
 
 #ifdef _OPENMP
 #    include <omp.h>
@@ -75,12 +78,15 @@ struct htelm
 ///< this function allocates mmeory with an alignment constraint
 static void allocate(void **memptr, size_t size, size_t align)
 {
-    fprintf(stderr,"allocating %zu MB memory with alignment %zu \n", size >> 20, align);
+    printf(stderr,"allocating %zu MB memory with alignment %zu \n", size >> 20, align);
     if (posix_memalign(memptr, align, size)) {
-        fprintf(stderr,"ENOMEM\n");
+        printf(stderr,"ENOMEM\n");
         exit(1);
     }
+    //*memptr = (uint8_t*) malloc(size);
     memset(*memptr, 0, size);
+    //printf("HI size %u\n", memptr + size);
+
 }
 
 
@@ -91,21 +97,19 @@ static inline uint64_t hash(uint64_t key)
     return out[0];
 }
 
-// int real_main(int argc, char *argv[]);
-// int real_main(int argc, char *argv[])
-int real_main(char *first_file, char *second_file){
+int ecall_real_main()
 {
     size_t hashsize = CONFIG_DEFAULT_HASH_SIZE;
     size_t nlookups = CONFIG_DEFAULT_NUM_LOOKUPS;
     size_t outersize = CONFIG_DEFAULT_OUTER_SIZE;
     size_t innersize = CONFIG_DEFAULT_INNER_SIZE;
 
-    fprintf(stderr,"Hashsize using the para s is %ld \n",hashsize);
+    printf("Hashsize using the para s is %ld \n",hashsize);
 
-    fprintf(stderr,"Hashtable Size: %zuMB\n", (hashsize * sizeof(struct htelm *)) >> 20);
-    fprintf(stderr,"Datatable Size Size: %zuMB\n", (outersize * sizeof(struct element)) >> 20);
-    fprintf(stderr,"Element Size: %zu MB\n", (hashsize * sizeof(struct htelm)) >> 20);
-    fprintf(stderr,"Total: %zu MB\n", ((hashsize * sizeof(struct htelm *))
+    printf("Hashtable Size: %zuMB\n", (hashsize * sizeof(struct htelm *)) >> 20);
+    printf("Datatable Size Size: %zuMB\n", (outersize * sizeof(struct element)) >> 20);
+    printf("Element Size: %zu MB\n", (hashsize * sizeof(struct htelm)) >> 20);
+    printf("Total: %zu MB\n", ((hashsize * sizeof(struct htelm *))
                                + ((outersize + innersize) * sizeof(struct element))
                                + (hashsize * sizeof(struct htelm)))
                                   >> 20);
@@ -116,10 +120,15 @@ int real_main(char *first_file, char *second_file){
              CONFIG_CACHELINE_SIZE);
 
 
+
+    printf("In the code size %u\n", hashtable);
+
+
     /* allocate the hash table elements for the join */
     struct htelm *htelms;
     allocate((void **)&htelms, innersize * sizeof(struct htelm), CONFIG_LARGE_PAGE_SIZE);
 
+    printf("HI %d\n", innersize);
 
     size_t nconflicts = 0;
     for (size_t i = 0; i < innersize; i++) {
@@ -141,51 +150,12 @@ int real_main(char *first_file, char *second_file){
         table[i].key = i;
     }
 
-    printf( "signalling readyness to %s\n", CONFIG_SHM_FILE_NAME ".ready");
-    FILE *fd2 = fopen(CONFIG_SHM_FILE_NAME ".ready", "w");
-
-    if (fd2 == NULL) {
-        fprintf(stderr, "ERROR: could not create the shared memory file descriptor\n");
-        exit(-1);
-    }
-
-    usleep(100);
-
     size_t matches = 0;
     size_t loaded = 0;
 
     // struct timeval tstart, tend;
     // gettimeofday(&tstart, NULL);
 
-   int fd = open(first_file, O_WRONLY|O_CREAT, DEFAULT_MODE);
-    if(fd<0){
-        // if(fd==-17){
-                fd = open(first_file, O_WRONLY, DEFAULT_MODE);
-        // }
-        if(fd<0){
-            fprintf(stderr,"Error opening the file %s %d \n", second_file, fd);
-            perror("open");
-            exit(1);
-        }
-    }
-    int fd_out = open(second_file, O_WRONLY|O_CREAT, DEFAULT_MODE);
-    if(fd_out<0){
-        //   if(fd==-17)
-        {
-                fd_out = open(second_file, O_WRONLY, DEFAULT_MODE);
-        }
-
-        
-        if(fd<0){
-            fprintf(stderr,"Error opening the file second_file_2 %d \n", fd_out);
-            perror("open");
-            exit(1);
-        }
-    }
-
-#ifdef _OPENMP
-#    pragma omp parallel for reduction(+ : matches)
-#endif
     for (size_t j = 0; j < nlookups; j++) {
         for (size_t i = 0; i < outersize; i++) {
             uint64_t hash[2]; /* Output for the hash */
@@ -196,7 +166,6 @@ int real_main(char *first_file, char *second_file){
             struct htelm *e = hashtable[hash[0] % hashsize];
             while (e) {
                 if (e->key == table[idx].key) {
-                    int bw =write(fd,e,sizeof(struct htelm));            
                     matches++;
                     break;
                 }
@@ -214,15 +183,10 @@ int real_main(char *first_file, char *second_file){
         }
     }
 
-    fprintf(stderr,"got %zu matches / %zu matches per iteration of %zu \n", matches, matches / nlookups, 2 * outersize);
-    fprintf(stderr,"hashtable conflicts = %zu\n", nconflicts);
+    printf("got %zu matches / %zu matches per iteration of %zu \n", matches, matches / nlookups, 2 * outersize);
+    printf("hashtable conflicts = %zu\n", nconflicts);
            
-    write(fd_out,table,total_mem);
-
-    close(fd);
-    close(fd_out);
-    fprintf(stderr,"Experiment DONE\n");
+    printf("Experiment DONE with conflicts = %zu\n", nconflicts);
 
     return 0;
-    }
 }

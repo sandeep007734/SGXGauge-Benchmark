@@ -1,0 +1,7 @@
+enclave {
+
+    trusted {
+        public int ecall_real_main(void);
+    };
+
+};

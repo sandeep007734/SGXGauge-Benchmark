@@ -21,35 +21,29 @@
  * SOFTWARE.
  */
 
-///< this is the cacheline size
-#define CONFIG_CACHELINE_SIZE 64
 
-#define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+//-----------------------------------------------------------------------------
+// MurmurHash3 was written by Austin Appleby, and is placed in the
+// public domain. The author hereby disclaims copyright to this source
+// code.
 
-///< define this if you have a modified kernel with Mitosis support
-#define CONFIG_HAVE_MODIFIED_KERNEL 1
+#ifndef _MURMURHASH3_H_
+#define _MURMURHASH3_H_
 
-///< the name of the shared memory file created
-#define CONFIG_SHM_FILE_NAME "/tmp/securefs-hashjoin-bench"
+#include <stdint.h>
 
-///< the random seed
-#define CONFIG_RAND_SEED 42
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-///< the size of the outer table in elements
-#define CONFIG_DEFAULT_OUTER_SIZE 1000000
+//-----------------------------------------------------------------------------
 
-///< the size of the inner table in elements
-#define CONFIG_DEFAULT_INNER_SIZE 100000
+int ecall_real_main();
 
-///< the size of the hash table
-#define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
+//-----------------------------------------------------------------------------
 
-///< the default amout of lookups
-#define CONFIG_DEFAULT_NUM_LOOKUPS 50
+#ifdef __cplusplus
+}
+#endif
 
-///< the key stride for the inner table
-#define CONFIG_INNER_KEY_STRIDE 4
-
-
-///< the size of the tuple in quad words
-#define CONFIG_ELEMENT_TUPLE_SIZE 15
+#endif  // _MURMURHASH3_H_

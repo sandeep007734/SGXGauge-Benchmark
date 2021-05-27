@@ -55,8 +55,6 @@
 #    include <omp.h>
 #endif
 
-#include "config.h"
-
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
@@ -206,27 +204,19 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argc);
     (void)(argv);
 
+    int result;
+
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
         printf("Info: Enclave raised unhandled exception.\n");
         return -1; 
     }
-     
-    char first_file[100],second_file[100];
-    strcpy(first_file,"/tmp/ensureinsecurefs/test");
-    strcpy(second_file,"/tmp/ensureinsecurefs/test_2");
-
-    if(argc > 2){
-        strcpy(first_file, argv[1]);
-        strcpy(second_file, argv[2]);
-    }
-
-    fprintf(stderr, "Files are %s and %s\n",first_file,second_file);
 
     struct timeval stop, start;
     gettimeofday(&start, NULL);
 
-    real_main(first_file,second_file);
+    ecall_real_main(global_eid, &result);
+
     gettimeofday(&stop, NULL);
 
     /* Destroy the enclave */
