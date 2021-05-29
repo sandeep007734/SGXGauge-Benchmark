@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011-2017 Intel Corporation. All rights reserved.
+# Copyright (C) 2011-2020 Intel Corporation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,19 +28,40 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #
-include buildenv.mk
-
-all:
-	$(MAKE) -f sgx_app.mk LINUX_SGX_BUILD=$(LINUX_SGX_BUILD) all
-	$(MAKE) -f sgx_enclave.mk LINUX_SGX_BUILD=$(LINUX_SGX_BUILD) all
-
-test:
-	$(MAKE) -f sgx_app.mk test
-
-clean:
-	$(MAKE) -f sgx_app.mk clean
-	$(MAKE) -f sgx_enclave.mk clean
 
 
-sgx_enclave
-sgx_app
+export PACKAGE_LIB := /opt/intel/sgxssl/lib64/
+export PACKAGE_INC := /opt/intel/sgxssl/include/
+export OS_ID=0
+export SGX_SDK ?= /opt/intel/sgxsdk/
+export VCC := @$(CC)
+export VCXX := @$(CXX)
+DEBUG ?= 0
+$(shell mkdir -p $(PACKAGE_LIB))
+UBUNTU_CONFNAME:=/usr/include/x86_64-linux-gnu/bits/confname.h
+ifneq ("$(wildcard $(UBUNTU_CONFNAME))","")
+	OS_ID=1
+else ifeq ($(origin NIX_PATH),environment)
+	OS_ID=3
+else
+	OS_ID=2
+endif
+ifeq ($(DEBUG), 1)
+	OBJDIR := debug
+	OPENSSL_LIB := libsgx_tsgxssl_cryptod.a
+	TRUSTED_LIB := libsgx_tsgxssld.a
+	UNTRUSTED_LIB := libsgx_usgxssld.a
+else
+	OBJDIR := release
+	OPENSSL_LIB := libsgx_tsgxssl_crypto.a
+	TRUSTED_LIB := libsgx_tsgxssl.a
+	UNTRUSTED_LIB := libsgx_usgxssl.a
+endif
+
+ifeq ($(VERBOSE),1)
+      VCC=$(CC)
+      VCXX=$(CXX)
+else
+      VCC=@$(CC)
+      VCXX=@$(CXX)
+endif

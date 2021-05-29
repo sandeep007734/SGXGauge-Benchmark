@@ -34,7 +34,9 @@
 ######## SGX SDK Settings ########
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
-UNTRUSTED_DIR=App
+ENCLAVE_DIR=Enclave
+
+include $(SGX_SDK)/buildenv.mk
 
 ifeq ($(shell getconf LONG_BIT), 32)
 	SGX_ARCH := x86
@@ -46,17 +48,12 @@ ifeq ($(SGX_ARCH), x86)
 	$(error x86 build is not supported, only x64!!)
 else
 	SGX_COMMON_CFLAGS := -m64 -Wall
-	ifeq ($(LINUX_SGX_BUILD), 1)
-		include ../../../../../buildenv.mk
-		SGX_LIBRARY_PATH := $(BUILD_DIR)
-		SGX_EDGER8R := $(BUILD_DIR)/sgx_edger8r
-		SGX_SDK_INC := $(COMMON_DIR)/inc
-		SGX_SHARED_LIB_FLAG := -Wl,-rpath,${SGX_LIBRARY_PATH}
-	else
-		SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
-		SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r
-		SGX_SDK_INC := $(SGX_SDK)/include
-	endif
+	SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
+	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x64/sgx_sign
+	SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r
+	SGX_SDK_INC := $(SGX_SDK)/include
+	LIBCXX_INC := $(SGX_SDK)/include/libcxx
+
 endif
 
 ifeq ($(DEBUG), 1)
@@ -65,69 +62,118 @@ $(error Cannot set DEBUG and SGX_PRERELEASE at the same time!!)
 endif
 endif
 
-OPENSSL_LIBRARY_PATH := $(PACKAGE_LIB)
+# Added to build with SgxSSL libraries
+TSETJMP_LIB := -lsgx_tsetjmp
+OPENSSL_LIBRARY_PATH := $(PACKAGE_LIB)/
+
+
+ifeq "20" "$(word 1, $(sort 20 $(SGXSDK_INT_VERSION)))"
+        TSETJMP_LIB:=
+endif
+
 ifeq ($(DEBUG), 1)
-        SGX_COMMON_CFLAGS += -O0 -g
-		SgxSSL_Link_Libraries := sgx_usgxssld
+        SGX_COMMON_FLAGS += -O0 -g
+		SGXSSL_Library_Name := sgx_tsgxssld
+		OpenSSL_Crypto_Library_Name := sgx_tsgxssl_cryptod
 else
-        SGX_COMMON_CFLAGS += -O2 -D_FORTIFY_SOURCE=2
-		SgxSSL_Link_Libraries := sgx_usgxssl
+        SGX_COMMON_FLAGS += -O2 -D_FORTIFY_SOURCE=2
+		SGXSSL_Library_Name := sgx_tsgxssl
+		OpenSSL_Crypto_Library_Name := sgx_tsgxssl_crypto
 endif
 
 
-######## App Settings ########
+SGX_COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
+                    -Waddress -Wsequence-point -Wformat-security \
+                    -Wmissing-include-dirs -Wfloat-equal -Wundef -Wshadow \
+                    -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls
+SGX_COMMON_CFLAGS := $(SGX_COMMON_FLAGS) -Wjump-misses-init -Wstrict-prototypes -Wunsuffixed-float-constants
+SGX_COMMON_CXXFLAGS := $(SGX_COMMON_FLAGS) -Wnon-virtual-dtor -std=c++11
 
 
-App_Cpp_Files := $(UNTRUSTED_DIR)/App.cpp
-App_Cpp_Objects := $(App_Cpp_Files:.cpp=.o)
-
-App_Include_Paths := -I$(UNTRUSTED_DIR) -I$(SGX_SDK_INC)
-
-App_C_Flags := $(SGX_COMMON_CFLAGS) -fpic -fpie -fstack-protector -Wformat -Wformat-security -Wno-attributes $(App_Include_Paths)
-App_Cpp_Flags := $(App_C_Flags) -std=c++11
+#### Enclave Settings ####
 
 ifneq ($(SGX_MODE), HW)
-	Urts_Library_Name := sgx_urts_sim
-	UaeService_Library_Name := sgx_uae_service_sim
+	Trts_Library_Name := sgx_trts_sim
+	Service_Library_Name := sgx_tservice_sim
 else
-	Urts_Library_Name := sgx_urts
-	UaeService_Library_Name := sgx_uae_service
+	Trts_Library_Name := sgx_trts
+	Service_Library_Name := sgx_tservice
 endif
 
+ifeq ($(SGX_MODE), HW)
+ifndef DEBUG
+ifneq ($(SGX_PRERELEASE), 1)
+Build_Mode = HW_RELEASE
+endif
+endif
+endif
+
+
+Enclave_Cpp_Files := $(wildcard $(ENCLAVE_DIR)/*.cpp) $(wildcard $(ENCLAVE_DIR)/Core-Library/*.cpp)
+Enclave_C_Files := $(wildcard $(ENCLAVE_DIR)/*.c) $(wildcard $(ENCLAVE_DIR)/Core-Library/*.c)
+
+Enclave_Cpp_Objects := $(Enclave_Cpp_Files:.cpp=.o)
+Enclave_C_Objects := $(Enclave_C_Files:.c=.o)
+
+Enclave_Include_Paths := -I. -I$(ENCLAVE_DIR) -I$(SGX_SDK_INC) -I$(SGX_SDK_INC)/tlibc -I$(LIBCXX_INC) -I$(PACKAGE_INC)
+
+Common_C_Cpp_Flags := -DOS_ID=$(OS_ID) $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpic -fpie -fstack-protector -fno-builtin-printf -Wformat -Wformat-security $(Enclave_Include_Paths) -include "tsgxsslio.h"
+Enclave_C_Flags := $(Common_C_Cpp_Flags) -Wno-implicit-function-declaration -std=c11
+Enclave_Cpp_Flags :=  $(Common_C_Cpp_Flags) -std=c++11 -nostdinc++
+
+SgxSSL_Link_Libraries := -L$(OPENSSL_LIBRARY_PATH) -Wl,--whole-archive -l$(SGXSSL_Library_Name) -Wl,--no-whole-archive \
+						 -l$(OpenSSL_Crypto_Library_Name)
 
 Security_Link_Flags := -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -pie
 
-App_Link_Flags := $(SGX_COMMON_CFLAGS) $(Security_Link_Flags) $(SGX_SHARED_LIB_FLAG) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -l$(UaeService_Library_Name) -L$(OPENSSL_LIBRARY_PATH) -l$(SgxSSL_Link_Libraries) -lpthread 
+Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+	$(Security_Link_Flags) \
+	$(SgxSSL_Link_Libraries) -L$(SGX_LIBRARY_PATH) \
+	-Wl,--whole-archive -l$(Trts_Library_Name) -Wl,--no-whole-archive \
+	-Wl,--start-group -lsgx_tstdc -lsgx_pthread -lsgx_tcxx -lsgx_tcrypto $(TSETJMP_LIB) -l$(Service_Library_Name) -Wl,--end-group \
+	-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
+	-Wl,-pie,-eenclave_entry -Wl,--export-dynamic  \
+	-Wl,--defsym,__ImageBase=0 \
+	-Wl,--version-script=$(ENCLAVE_DIR)/Enclave.lds
 
 
 .PHONY: all test
 
-all: App
+all: Enclave.signed.so
+# usually release mode don't sign the enclave, but here we want to run the test also in release mode
+# this is not realy a release mode as the XML file don't disable debug - we can't load real release enclaves (white list)
 
 test: all
-	@$(CURDIR)/App
-	@echo "RUN  =>  App [$(SGX_MODE)|$(SGX_ARCH), OK]"
 
-######## App Objects ########
 
-$(UNTRUSTED_DIR)/Enclave_u.c: $(SGX_EDGER8R) enclave/Enclave.edl
-	@cd $(UNTRUSTED_DIR) && $(SGX_EDGER8R) --untrusted ../enclave/Enclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC)
+######## Enclave Objects ########
+
+$(ENCLAVE_DIR)/Enclave_t.h: $(SGX_EDGER8R) $(ENCLAVE_DIR)/Enclave.edl
+	@cd $(ENCLAVE_DIR) && $(SGX_EDGER8R) --trusted ../Enclave/Enclave.edl --search-path $(PACKAGE_INC) --search-path $(SGX_SDK_INC) --search-path ../Enclave
 	@echo "GEN  =>  $@"
 
-$(UNTRUSTED_DIR)/Enclave_u.o: $(UNTRUSTED_DIR)/Enclave_u.c
-	$(VCC) $(App_C_Flags) -c $< -o $@
+$(ENCLAVE_DIR)/Enclave_t.c: $(ENCLAVE_DIR)/Enclave_t.h
+
+$(ENCLAVE_DIR)/Enclave_t.o: $(ENCLAVE_DIR)/Enclave_t.c
+	$(VCC) $(SGX_COMMON_CFLAGS) $(Enclave_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-$(UNTRUSTED_DIR)/%.o: $(UNTRUSTED_DIR)/%.cpp $(UNTRUSTED_DIR)/Enclave_u.c
-	$(VCXX) $(App_Cpp_Flags) -c $< -o $@
+$(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.cpp $(ENCLAVE_DIR)/Enclave_t.h
+	$(VCXX) $(Enclave_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
-App: $(UNTRUSTED_DIR)/Enclave_u.o $(App_Cpp_Objects)
-	$(VCXX) $^ -o $@ $(App_Link_Flags)
+$(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.c $(ENCLAVE_DIR)/Enclave_t.h
+	$(VCC) $(Enclave_C_Flags) -c $< -o $@
+	@echo "CC  <=  $<"
+
+Enclave.so: $(ENCLAVE_DIR)/Enclave_t.o $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
+	$(VCXX) $^ -o $@ $(Enclave_Link_Flags)
 	@echo "LINK =>  $@"
 
-
-.PHONY: clean
+Enclave.signed.so: Enclave.so
+	@$(SGX_ENCLAVE_SIGNER) sign -key $(ENCLAVE_DIR)/Enclave_private.pem -enclave Enclave.so -out $@ -config $(ENCLAVE_DIR)/Enclave.config.xml
+	@echo "SIGN =>  $@"
 
 clean:
-	@rm -f App  $(App_Cpp_Objects) $(UNTRUSTED_DIR)/Enclave_u.*
+	@rm -f Enclave.* $(ENCLAVE_DIR)/Enclave_t.* $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
+
