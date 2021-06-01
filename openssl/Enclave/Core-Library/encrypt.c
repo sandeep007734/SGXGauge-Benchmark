@@ -16,15 +16,16 @@
 
 void handleErrors(void)
 {
-    ERR_print_errors_fp(stderr);
+    char *error_message = "An error has occured."
+    printf("%s\n", error_message);
     abort();
 }
 
-    char *enc_filename="/tmp/datax_enc.csv";
+char *enc_filename="/tmp/datax_enc.csv";
 
 
-int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
-            unsigned char *iv, unsigned char *plaintext)
+int decrypt(char *ciphertext, int ciphertext_len, char *key,
+            char *iv, char *plaintext)
 {
     EVP_CIPHER_CTX *ctx;
 
@@ -68,8 +69,8 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
     return plaintext_len;
 }
 
-int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
-            unsigned char *iv, unsigned char *ciphertext)
+int encrypt(char *plaintext, int plaintext_len, char *key,
+            char *iv, char *ciphertext)
 {
     EVP_CIPHER_CTX *ctx;
 
@@ -113,47 +114,32 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
     return ciphertext_len;
 }
 
-    /* A 256 bit key */
-    unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
+/* A 256 bit key */
+char *key = (char *)"01234567890123456789012345678901";
 
-    /* A 128 bit IV */
-    unsigned char *iv = (unsigned char *)"0123456789012345";
+/* A 128 bit IV */
+char *iv = (char *)"0123456789012345";
 
 
 void call_decrypt(){
 
-    // char *filename="/tmp/datax_enc.csv";
     char *dec_filename="/tmp/datax_dec.csv";
- int fd;
-    struct stat s;
+
+    uint64_t file_size;
     char *new_bytes, *dec_bytes;
 
+    ocall_file_stat(enc_filename, &file_size);
 
-    fd=open(enc_filename,O_RDONLY);
-    printf("call_decrypt %s FD of opened files is %d\n",enc_filename,fd);
-    if(fd > 0){
-      s.st_size=0;
-      stat(enc_filename, &s);
-      printf("SecureFS: Size of the file is %ld \n",s.st_size);
-      new_bytes =(char *)malloc(s.st_size);
-      dec_bytes =(char *)malloc(s.st_size+20);
-      read(fd,new_bytes, s.st_size);
-    }  else{
-        perror("open");
-        exit (1);
-      
-    }
-  close(fd);
+    new_bytes =(char *)malloc(file_size);
+    dec_bytes =(char *)malloc(file_size + 20);
 
-
-      /* Encrypt the plaintext */
-    if(new_bytes){
-      int new_len = decrypt (new_bytes, s.st_size, key, iv,
-                              dec_bytes);
-      int efd=open(dec_filename,O_CREAT|O_WRONLY,777);
-      printf("call_decrypt efd of opened files is %d\n",efd);
-      write(efd,dec_bytes,new_len);
-      close(efd);
+    ocall_read_file(enc_filename, new_bytes, file_size);
+   
+    /* Encrypt the plaintext */
+    if(new_bytes)
+    {
+        uint64_t new_len = decrypt (new_bytes, file_size, key, iv, dec_bytes);
+        ocall_read_file(dec_filename, dec_bytes, new_len);
     }
 }
 
@@ -167,54 +153,40 @@ int ecall_real_main (void)
 
 
     /* Message to be encrypted */
-    unsigned char *plaintext =
-        (unsigned char *)"The quick brown fox jumps over the lazy dog";
-
-   
-    int fd;
-    struct stat s;
+    char *plaintext = (char *)"The quick brown fox jumps over the lazy dog";
 
     char *filename="/tmp/datax.csv";
 
-    fd=open(filename,O_RDONLY);
+    uint64_t file_size;
     char *new_bytes, *enc_bytes;
-    printf("main FD of opened files is %d\n",fd);
-    if(fd > 0){
-      s.st_size=0;
-      stat(filename, &s);
-      printf("SecureFS: Size of the file is %ld \n",s.st_size);
-      new_bytes =(char *)malloc(s.st_size);
-      enc_bytes =(char *)malloc(s.st_size+20);
-      read(fd,new_bytes, s.st_size);
-    }  
-  close(fd);
+
+    ocall_file_stat(filename, &file_size);
+
+    new_bytes =(char *)malloc(file_size);
+    enc_bytes =(char *)malloc(file_size + 20);
+
+    ocall_read_file(filename, new_bytes, file_size);
    
-      /* Encrypt the plaintext */
-    if(new_bytes){
-      int new_len = encrypt (new_bytes, s.st_size, key, iv,
-                              enc_bytes);
-      int efd=open(enc_filename,O_CREAT|O_WRONLY,777);
-      
-      printf("main %s efd of opened files is %d\n",enc_filename, efd);
-      if(efd==-1){
-          perror("open");
-        exit (1);
-      }
-      write(efd,enc_bytes,new_len);
-      close(efd);
+    /* Encrypt the plaintext */
+    if(new_bytes)
+    {
+        uint64_t new_len = encrypt (new_bytes, s.st_size, key, iv, enc_bytes);
+        ocall_read_file(enc_filename, enc_bytes, new_len);
     }
+
     free(enc_bytes);
     free(new_bytes);
     call_decrypt();
+    
     /*
      * Buffer for ciphertext. Ensure the buffer is long enough for the
      * ciphertext which may be longer than the plaintext, depending on the
      * algorithm and mode.
      */
-    unsigned char ciphertext[128];
+    char ciphertext[128];
 
     /* Buffer for the decrypted text */
-    unsigned char decryptedtext[128];
+    char decryptedtext[128];
 
     int decryptedtext_len, ciphertext_len;
 
@@ -225,7 +197,7 @@ int ecall_real_main (void)
 
     /* Do something useful with the ciphertext here */
     printf("Ciphertext is:\n");
-    BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
+    //BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
 
     /* Decrypt the ciphertext */
     decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv,
@@ -235,9 +207,9 @@ int ecall_real_main (void)
     decryptedtext[decryptedtext_len] = '\0';
 
     /* Show the decrypted text */
-    printf("Decrypted text is:\n");
+    //printf("Decrypted text is:\n");
     printf("%s\n", decryptedtext);
 
-    printf("SECUREFS_TIME %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec); 
+    //printf("SECUREFS_TIME %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec); 
     return 0;
 }
