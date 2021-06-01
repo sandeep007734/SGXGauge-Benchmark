@@ -1,7 +1,7 @@
 runme.sh
 *evaluation*
 *.config_HW_DEBUG_x64*
-*_t*
+*_t.*
 *_u*
 *.so
 app
