@@ -6,17 +6,17 @@
 // #include <fstream>
 #include <stdlib.h>
 // #include <cmath>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
 #include <unistd.h>
-#include <sys/time.h>
+//#include <sys/time.h>
 
 void handleErrors(void)
 {
-    char *error_message = "An error has occured."
+    char *error_message = "An error has occured.";
     printf("%s\n", error_message);
     abort();
 }
@@ -138,6 +138,7 @@ void call_decrypt(){
     /* Encrypt the plaintext */
     if(new_bytes)
     {
+	printf("HI");
         uint64_t new_len = decrypt (new_bytes, file_size, key, iv, dec_bytes);
         ocall_read_file(dec_filename, dec_bytes, new_len);
     }
@@ -155,6 +156,7 @@ int ecall_real_main (void)
     /* Message to be encrypted */
     char *plaintext = (char *)"The quick brown fox jumps over the lazy dog";
 
+    /*
     char *filename="/tmp/datax.csv";
 
     uint64_t file_size;
@@ -167,17 +169,16 @@ int ecall_real_main (void)
 
     ocall_read_file(filename, new_bytes, file_size);
    
-    /* Encrypt the plaintext */
     if(new_bytes)
     {
-        uint64_t new_len = encrypt (new_bytes, s.st_size, key, iv, enc_bytes);
+        uint64_t new_len = encrypt (new_bytes, file_size, key, iv, enc_bytes);
         ocall_read_file(enc_filename, enc_bytes, new_len);
     }
 
     free(enc_bytes);
     free(new_bytes);
     call_decrypt();
-    
+    */    
     /*
      * Buffer for ciphertext. Ensure the buffer is long enough for the
      * ciphertext which may be longer than the plaintext, depending on the
@@ -196,7 +197,7 @@ int ecall_real_main (void)
 
 
     /* Do something useful with the ciphertext here */
-    printf("Ciphertext is:\n");
+    printf("Ciphertext is:%s\n", ciphertext);
     //BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
 
     /* Decrypt the ciphertext */

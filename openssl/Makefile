@@ -40,7 +40,3 @@ test:
 clean:
 	$(MAKE) -f sgx_app.mk clean
 	$(MAKE) -f sgx_enclave.mk clean
-
-
-sgx_enclave
-sgx_app

@@ -72,21 +72,21 @@ ifeq "20" "$(word 1, $(sort 20 $(SGXSDK_INT_VERSION)))"
 endif
 
 ifeq ($(DEBUG), 1)
-        SGX_COMMON_FLAGS += -O0 -g
+        SGX_COMMON_CFLAGS += -O0 -g
 		SGXSSL_Library_Name := sgx_tsgxssld
 		OpenSSL_Crypto_Library_Name := sgx_tsgxssl_cryptod
 else
-        SGX_COMMON_FLAGS += -O2 -D_FORTIFY_SOURCE=2
+        SGX_COMMON_CFLAGS += -O2 -D_FORTIFY_SOURCE=2
 		SGXSSL_Library_Name := sgx_tsgxssl
 		OpenSSL_Crypto_Library_Name := sgx_tsgxssl_crypto
 endif
 
 
-SGX_COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
+#SGX_COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
                     -Waddress -Wsequence-point -Wformat-security \
                     -Wmissing-include-dirs -Wfloat-equal -Wundef -Wshadow \
                     -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls
-SGX_COMMON_CFLAGS := $(SGX_COMMON_FLAGS) -Wjump-misses-init -Wstrict-prototypes -Wunsuffixed-float-constants
+#SGX_COMMON_CFLAGS := $(SGX_COMMON_FLAGS) -Wjump-misses-init -Wstrict-prototypes -Wunsuffixed-float-constants
 SGX_COMMON_CXXFLAGS := $(SGX_COMMON_FLAGS) -Wnon-virtual-dtor -std=c++11
 
 
@@ -128,7 +128,7 @@ Security_Link_Flags := -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -pie
 
 Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
 	$(Security_Link_Flags) \
-	$(SgxSSL_Link_Libraries) -L$(SGX_LIBRARY_PATH) \
+	$(SgxSSL_Link_Libraries) -L$(SGX_LIBRARY_PATH) -L$(SGX_SDK_INC)\
 	-Wl,--whole-archive -l$(Trts_Library_Name) -Wl,--no-whole-archive \
 	-Wl,--start-group -lsgx_tstdc -lsgx_pthread -lsgx_tcxx -lsgx_tcrypto $(TSETJMP_LIB) -l$(Service_Library_Name) -Wl,--end-group \
 	-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
@@ -139,7 +139,7 @@ Enclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefau
 
 .PHONY: all test
 
-all: Enclave.signed.so
+all: enclave.signed.so
 # usually release mode don't sign the enclave, but here we want to run the test also in release mode
 # this is not realy a release mode as the XML file don't disable debug - we can't load real release enclaves (white list)
 
@@ -163,15 +163,18 @@ $(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.cpp $(ENCLAVE_DIR)/Enclave_t.h
 	@echo "CXX  <=  $<"
 
 $(ENCLAVE_DIR)/%.o: $(ENCLAVE_DIR)/%.c $(ENCLAVE_DIR)/Enclave_t.h
+	@echo $(VCC) $(Enclave_C_Flags) -c $< -o $@
 	$(VCC) $(Enclave_C_Flags) -c $< -o $@
 	@echo "CC  <=  $<"
 
-Enclave.so: $(ENCLAVE_DIR)/Enclave_t.o $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
+enclave.so: $(ENCLAVE_DIR)/Enclave_t.o $(Enclave_Cpp_Objects) $(Enclave_C_Objects)
+	@echo "BREAKING"
+	@echo $(VCXX) $^ -o $@ $(Enclave_Link_Flags)
 	$(VCXX) $^ -o $@ $(Enclave_Link_Flags)
 	@echo "LINK =>  $@"
 
-Enclave.signed.so: Enclave.so
-	@$(SGX_ENCLAVE_SIGNER) sign -key $(ENCLAVE_DIR)/Enclave_private.pem -enclave Enclave.so -out $@ -config $(ENCLAVE_DIR)/Enclave.config.xml
+enclave.signed.so: enclave.so
+	@$(SGX_ENCLAVE_SIGNER) sign -key $(ENCLAVE_DIR)/Enclave_private_test.pem -enclave enclave.so -out $@ -config $(ENCLAVE_DIR)/Enclave.config.xml
 	@echo "SIGN =>  $@"
 
 clean:

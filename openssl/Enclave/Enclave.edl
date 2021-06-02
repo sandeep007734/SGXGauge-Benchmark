@@ -1,4 +1,7 @@
 enclave {
+
+from "sgx_tsgxssl.edl" import *;
+from "sgx_pthread.edl" import *;
     
 
     /* Import ECALL/OCALL from sub-directory EDLs.
@@ -14,9 +17,9 @@ enclave {
      */
     untrusted {
         void ocall_print_string([in, string] const char *str);
-        void ocall_file_stat([in, string] char *filename, [in, out] uint64_t *size)
-        void ocall_read_file([in, string] char *filename, [in, out, string]char *content, [in] uint64_t *size)
-        void ocall_write_file([in, string] char *filename, [in, string] char *content, [in] uint64_t *size)
+        void ocall_file_stat([in, string] char *filename, [in, out] uint64_t *size);
+        void ocall_read_file([in, string] char *filename, [in, out, string]char *content, [in] uint64_t *size);
+        void ocall_write_file([in, string] char *filename, [in, string] char *content, [in] uint64_t *size);
     };
 
      trusted {

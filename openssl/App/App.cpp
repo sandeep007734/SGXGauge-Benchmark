@@ -50,6 +50,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #ifdef _OPENMP
 #    include <omp.h>
@@ -199,35 +200,33 @@ void ocall_print_string(const char *str)
 
 void ocall_file_stat(char *filename, uint64_t *size)
 {
-    fd=open(filename,O_RDONLY);
-    printf("main FD of opened files is %d\n",fd);
+    struct stat s;
+    int fd=open(filename,O_RDONLY);
     if(fd > 0)
     {
         s.st_size=0;
         stat(filename, &s);
     }
     close(fd);
-    size = s.st_size;
+    *size = (uint64_t) s.st_size;
 }
 
 void ocall_read_file(char *filename, char *content, uint64_t *size)
 {
-    fd=open(filename,O_RDONLY);
-    printf("main FD of opened files is %d\n",fd);
+    int fd=open(filename,O_RDONLY);
     if(fd > 0)
     {
-        read(fd,content, size);
+        read(fd,content, (size_t) *size);
     }
     close(fd);
 }
 
 void ocall_write_file(char *filename, char *content, uint64_t *size)
 {
-    fd=open(filename, O_CREAT|O_WRONLY, 777);
-    printf("main %s efd of opened files is %d\n",enc_filename, efd);
+    int fd=open(filename, O_CREAT|O_WRONLY, 777);
     if(fd > 0)
     {
-        write(fd, content, size);
+        write(fd, content, (size_t) *size);
     }
     close(fd);
 }

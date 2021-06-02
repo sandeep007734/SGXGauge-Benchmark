@@ -132,4 +132,4 @@ app: $(UNTRUSTED_DIR)/Enclave_u.o $(App_Cpp_Objects)
 .PHONY: clean
 
 clean:
-	@rm -f App  $(App_Cpp_Objects) $(UNTRUSTED_DIR)/Enclave_u.*
+	@rm -f app  $(App_Cpp_Objects) $(UNTRUSTED_DIR)/Enclave_u.*
