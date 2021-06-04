@@ -34,8 +34,8 @@ struct Node
 struct edge; // forward declaration
 typedef vector<edge> node;
 struct edge {
-    unsigned long dest;
-    unsigned weight;
+    long dest;
+    long weight;
 };
 
 void InitializeGraph(Node**, bool**, bool**, bool**, int**, int**, int, char*, char*);
@@ -57,9 +57,9 @@ void InitializeGraph(
 
     node *graph = new node[numNodes];
     int source = 0;
-    unsigned numEdges;
-    unsigned long nodeID;
-    unsigned weight;
+    long numEdges;
+    long long nodeID;
+    long weight;
 
     *h_graph_nodes = (Node*) malloc(sizeof(Node)*numNodes);
     *h_graph_mask = (bool*) malloc(sizeof(bool)*numNodes);
@@ -69,7 +69,7 @@ void InitializeGraph(
 
     for (int i = 0; i < numNodes; ++i) {
         numEdges = abs(common_rand() % ( MAX_INIT_EDGES - MIN_EDGES + 1 )) + MIN_EDGES;
-        for ( unsigned j = 0; j < numEdges; j++ ) {
+        for ( long j = 0; j < numEdges; j++ ) {
             nodeID = abs(common_rand() % numNodes);
             weight = abs(common_rand() % ( MAX_WEIGHT - MIN_WEIGHT + 1 )) + MIN_WEIGHT;
             graph[i].push_back( edge() );
@@ -81,9 +81,9 @@ void InitializeGraph(
         }
     }
 
-    unsigned long totalEdges = 0;
+    long long totalEdges = 0;
     for (int i = 0; i < numNodes; ++i) {
-        unsigned long numEdges = graph[i].size();
+        long long numEdges = graph[i].size();
         (*h_graph_nodes)[i].starting = totalEdges;
         (*h_graph_nodes)[i].no_of_edges = numEdges;
         (*h_graph_mask)[i] = false;
@@ -99,9 +99,9 @@ void InitializeGraph(
     (*h_graph_mask)[source] = true;
     (*h_graph_visited)[source] = true;
 
-    unsigned k = 0;
-    for ( unsigned long i = 0; i < numNodes; i++ ) {
-        for ( unsigned j = 0; j < graph[i].size(); j++ ) {
+    long k = 0;
+    for ( long long i = 0; i < numNodes; i++ ) {
+        for ( long j = 0; j < graph[i].size(); j++ ) {
             (*h_graph_edges)[k] = graph[i][j].dest;
             ++k;
         }
@@ -133,8 +133,8 @@ int ecall_real_main() {
     char *vertice_file_path = NULL;
     char *edge_file_path = NULL;
     char *cost_file_path = NULL;
-    unsigned int expected_no_of_nodes = 3000000;
-    unsigned long int expected_total_cost = 26321966;
+    long int expected_no_of_nodes = 3000000;
+    long long int expected_total_cost = 26321966;
     int no_of_nodes;
     //if (argc == 1) {
         printf("Using default number of nodes %d\n", NUM_NODES);
@@ -214,7 +214,7 @@ int ecall_real_main() {
     while(stop);
     //stopwatch_stop(&sw1);
 
-    unsigned long total_cost = 0;
+    long long total_cost = 0;
     for(int i=0;i<no_of_nodes;i++) {
         total_cost += h_cost[i];
     }
