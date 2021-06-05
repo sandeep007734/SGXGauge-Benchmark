@@ -50,6 +50,8 @@
 #include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+
 
 #ifdef _OPENMP
 #    include <omp.h>
@@ -197,6 +199,33 @@ void ocall_print_string(const char *str)
     printf("%s", str);
 }
 
+void ocall_get_edge_count(char *filename, uint64_t *totalEdges)
+{
+    struct stat s;
+    int fd=open(filename,O_RDONLY);
+    if(fd > 0)
+    {
+        s.st_size=0;
+        stat(filename, &s);
+    }
+    close(fd);
+    *totalEdges = (uint64_t) s.st_size / sizeof(struct graph_link) ;
+}
+
+void ocall_get_graph_data(char *filename, struct graph_link *graph_data, uint64_t totalEdges)
+{
+    FILE *fp = fopen(filename, "r");
+
+    struct graph_link input;
+    long i = 0;
+    while(fread(&input, sizeof(struct graph_link), 1, fp))
+    {
+        graph_data[i].src = input.src ;
+        graph_data[i].dest = input.dest ;
+        graph_data[i].weight = input.weight ;
+        i++;
+    }
+}
 
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])

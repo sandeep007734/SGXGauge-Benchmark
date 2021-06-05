@@ -6,8 +6,13 @@ enclave {
      *  [import]: specifies the functions to import, 
      *  [*]: implies to import all functions.
      */
-    
-    // from "Core-Library/hashjoin.edl" import *;
+
+
+    struct graph_link {
+        uint64_t src;
+        uint64_t dest;
+        uint64_t weight;
+    };
 
     /* 
      * ocall_print_string - invokes OCALL to display string buffer inside the enclave.
@@ -16,6 +21,8 @@ enclave {
      */
     untrusted {
         void ocall_print_string([in, string] const char *str);
+        void ocall_get_edge_count([in, string] char *filename, [in, out, count = 1] uint64_t *totalEdges);
+        void ocall_get_graph_data([in, string] char *filename, [in, out, count = totalEdges] struct graph_link *graph_data, uint64_t totalEdges);
     };
 
      trusted {
