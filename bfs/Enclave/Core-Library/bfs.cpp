@@ -106,9 +106,8 @@ int ecall_real_main() {
 
     struct graph_link* graph_data = (struct graph_link*) malloc(graph_size * sizeof(struct graph_link));
 
-
-    printf("Location of graph_data: %u \n", graph_data);
-    printf("Location of graph_data: %lld \n", graph_size * sizeof(struct graph_link));
+    printf("Starting Location of graph_data: %u \n", graph_data);
+    printf("Size of Memory to be allocated in Bytes: %lld \n", graph_size * sizeof(struct graph_link));
 
     ocall_get_graph_data(GRAPH_FILE_PATH, graph_data, graph_size);
 
