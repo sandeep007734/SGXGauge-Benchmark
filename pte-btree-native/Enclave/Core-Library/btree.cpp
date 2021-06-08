@@ -86,24 +86,17 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-//#include <sys/time.h>
 #include <string.h>
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-//#include <fcntl.h>
 #include <limits.h>
 
-//#include <sys/vfs.h>
 #include <sys/types.h>
-//#include <dirent.h>
 
-//#include <sys/time.h>
 #include <assert.h>
-//#include <sys/stat.h>
-//#include <sys/mman.h>
 #include <inttypes.h>
 
 #include "Enclave.h"
@@ -141,13 +134,7 @@ size_t allocator_stat = 0;
 static inline void *allocate(size_t size, size_t alignment)
 {
     void *memptr;
-    /*if (posix_memalign(&memptr, alignment, size)) {
-        printf("ENOMEM\n");
-        exit(1);
-    }*/
-
     memptr = memalign(alignment, size);
-
     allocator_stat += size;
 
     memset(memptr, 0, size);
@@ -158,12 +145,6 @@ static inline void *allocate(size_t size, size_t alignment)
 static inline void *allocate_align64(size_t size)
 {
     void *memptr;
-    // printf("allocating %zu kB memory\n", size >> 10);
-    /*if (posix_memalign(&memptr, 64, size)) {
-        printf("ENOMEM\n");
-        exit(1);
-    }*/
-
     memptr = memalign(64, size);
     allocator_stat += size;
 
