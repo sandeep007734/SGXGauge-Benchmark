@@ -184,8 +184,6 @@ echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
 sudo chown -R catchabhisek:catchabhisek -- *
 
-echo ${user}
-
 echo "Cleaning"
 
 touch ${QUIT_FILE}
