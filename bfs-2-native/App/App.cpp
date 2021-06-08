@@ -74,6 +74,9 @@ typedef struct _sgx_errlist_t {
     const char *sug; /* Suggestion */
 } sgx_errlist_t;
 
+static struct graph_link* untrusted_graph_data;
+static uint64_t graph_size;
+
 /* Error code returned by sgx_create_enclave */
 static sgx_errlist_t sgx_errlist[] = {
     {
@@ -209,21 +212,34 @@ void ocall_get_edge_count(char *filename, uint64_t *totalEdges)
         stat(filename, &s);
     }
     close(fd);
-    *totalEdges = (uint64_t) s.st_size / sizeof(struct graph_link) ;
+    *totalEdges = (uint64_t) s.st_size / sizeof(struct graph_link);
 }
 
-void ocall_get_graph_data(char *filename, struct graph_link *graph_data, uint64_t totalEdges)
+void ocall_load_graph(char *filename, uint64_t totalEdges)
 {
     FILE *fp = fopen(filename, "r");
-
+    graph_size = totalEdges;
+    untrusted_graph_data = (struct graph_link*) malloc(graph_size * sizeof(struct graph_link));
     struct graph_link input;
     long i = 0;
     while(fread(&input, sizeof(struct graph_link), 1, fp))
     {
-        graph_data[i].src = input.src ;
-        graph_data[i].dest = input.dest ;
-        graph_data[i].weight = input.weight ;
+        untrusted_graph_data[i].src = input.src ;
+        untrusted_graph_data[i].dest = input.dest ;
+        untrusted_graph_data[i].weight = input.weight ;
         i++;
+    }
+}
+
+void ocall_get_graph_data(struct graph_link *graph_data, uint64_t size, uint64_t start_ptr)
+{
+    uint64_t pos = 0;
+    while(pos < size)
+    {
+        graph_data[pos].src = untrusted_graph_data[pos+start_ptr].src ;
+        graph_data[pos].dest = untrusted_graph_data[pos+start_ptr].dest ;
+        graph_data[pos].weight = untrusted_graph_data[pos+start_ptr].weight ;
+        pos++;
     }
 }
 

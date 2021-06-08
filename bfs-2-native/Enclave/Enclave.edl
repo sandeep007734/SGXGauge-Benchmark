@@ -22,7 +22,8 @@ enclave {
     untrusted {
         void ocall_print_string([in, string] const char *str);
         void ocall_get_edge_count([in, string] char *filename, [in, out, count = 1] uint64_t *totalEdges);
-        void ocall_get_graph_data([in, string] char *filename, [in, out, count = totalEdges] struct graph_link *graph_data, uint64_t totalEdges);
+        void ocall_get_graph_data([in, out, count = size] struct graph_link *graph_data, uint64_t size, uint64_t start_ptr);
+        void ocall_load_graph([in, string] char *filename, uint64_t totalEdges);
     };
 
      trusted {

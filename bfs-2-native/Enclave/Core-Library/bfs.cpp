@@ -103,13 +103,21 @@ int ecall_real_main() {
 
     uint64_t graph_size = 0;
     ocall_get_edge_count(GRAPH_FILE_PATH, &graph_size);
+    ocall_load_graph(GRAPH_FILE_PATH, graph_size);
 
     struct graph_link* graph_data = (struct graph_link*) malloc(graph_size * sizeof(struct graph_link));
 
     printf("Starting Location of graph_data: %u \n", graph_data);
     printf("Size of Memory to be allocated in Bytes: %lld \n", graph_size * sizeof(struct graph_link));
+    printf("Graph Size: %lld \n", graph_size);
 
-    ocall_get_graph_data(GRAPH_FILE_PATH, graph_data, graph_size);
+    uint64_t pos;
+
+    for(uint64_t i = 0; i< graph_size; i+=170)
+    {
+        pos = ((i+170) < graph_size) ? 170 : (graph_size - i);
+        ocall_get_graph_data((graph_data + i), pos, i);
+    }
 
     LoadGraph(
         &h_graph_nodes,
