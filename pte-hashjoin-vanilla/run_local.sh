@@ -16,6 +16,7 @@ EXEC_TYPE=$1
 BENCH="hashjoin"
 EXP_NAME="graphene_2"
 BENCH_ARGS=" "
+user=$(whoami)
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
@@ -30,17 +31,11 @@ elif [ $EXEC_TYPE -eq 2 ];then
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
     CMD="./bin/bench_hashjoin_st ${BENCH_ARGS}"
-elif [ $EXEC_TYPE -eq 4 ];then
-    PREFIX="SGX-NATIVE-${BENCH}"
-    BENCHHOME="/home/sandeep/Desktop/work/phd/benchmark-work/flaas-bench/pte-hashjoin"
-    CMD="./app -u nobody ${BENCH_ARGS}"
 
-  
 else
     echo "ERROR"
     exit 1
 fi
-
 
 
 if [ -e ./prepare_graphene.sh ];then
@@ -59,7 +54,7 @@ QUIT_FILE="/tmp/alloctest-bench.quit"
 TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
-MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/graphene-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
 OUTFILE=${MAIN_DIR}"/perflog-"$PREFIX"-log.dat"
@@ -87,10 +82,14 @@ rm ${TMP_FILE}
 rm ${QUIT_FILE}
 
 # Restting the SGX counters
-${TREND_DIR}/test_ioctl.o 1
-${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
 
-PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o 1
+    ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
+    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+else
+    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
+fi
 
 if [ $EXEC_TYPE -ne 4 ]; then
     $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
@@ -147,7 +146,12 @@ SECONDS=0
 # ============================ CONT SETUP===============================================
 # ======================================================================================
 
-CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
+if [ "$user" = "sandeep" ]; then
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
+else
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
+fi
+
 echo "Starting the monitor"
 PERF_TIMER=1000
 SLEEP_DURATION=2
@@ -170,15 +174,22 @@ done
 
 wait $BENCHMARK_PID 2>/dev/null
 # kill -INT $PERF_PID &>/dev/null
-${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+fi
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
-sudo chown -R sandeep:sandeep -- *
+sudo chown -R catchabhisek:catchabhisek -- *
+
+echo ${user}
 
 echo "Cleaning"
+
 touch ${QUIT_FILE}
+
 ps -aux | grep mem_stats.sh |  grep -v 'color'
 
 for pid in $(ps -aux | grep mem_stats.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
