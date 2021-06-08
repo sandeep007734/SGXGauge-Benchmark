@@ -73,6 +73,9 @@ typedef struct _sgx_errlist_t {
     const char *sug; /* Suggestion */
 } sgx_errlist_t;
 
+static chat *data;
+static uint64_t data_len;
+
 /* Error code returned by sgx_create_enclave */
 static sgx_errlist_t sgx_errlist[] = {
     {
@@ -211,19 +214,31 @@ void ocall_file_stat(char *filename, uint64_t *size)
     *size = (uint64_t) s.st_size;
 }
 
-void ocall_read_file(char *filename, char *content, uint64_t *size)
+void ocall_file_load(char *filename, uint64_t size)
 {
     int fd=open(filename,O_RDONLY);
+    data_len = size;
+    data = (char *) malloc(data_len * sizeof(char));
     if(fd > 0)
     {
-        read(fd,content, (size_t) *size);
+        read(fd,data, (size_t) *data_len);
     }
     close(fd);
 }
 
+void ocall_read_file(char *content, uint64_t size, uint64_t start_ptr)
+{
+    uint64_t pos = 0;
+    while(pos < size)
+    {
+        content[pos] = data[pos+start_ptr];
+        pos++;
+    }
+}
+
 void ocall_write_file(char *filename, char *content, uint64_t *size)
 {
-    int fd=open(filename, O_CREAT|O_WRONLY, 777);
+    int fd=open(filename, O_CREAT|O_WRONLY|O_APPEND, 777);
     if(fd > 0)
     {
         write(fd, content, (size_t) *size);
