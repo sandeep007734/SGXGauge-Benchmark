@@ -138,7 +138,10 @@ size_t allocator_stat = 0;
 static inline void *allocate(size_t size, size_t alignment)
 {
     void *memptr;
-    memptr = memalign(alignment, size);
+    if (posix_memalign(&memptr, alignment, size)) {
+        printf("ENOMEM\n");
+        exit(1);
+    }
 
     allocator_stat += size;
 
@@ -150,7 +153,12 @@ static inline void *allocate(size_t size, size_t alignment)
 static inline void *allocate_align64(size_t size)
 {
     void *memptr;
-    memptr = memalign(64, size);
+    // printf("allocating %zu kB memory\n", size >> 10);
+    if (posix_memalign(&memptr, 64, size)) {
+        printf("ENOMEM\n");
+        exit(1);
+    }
+
     allocator_stat += size;
 
     memset(memptr, 0, size);
