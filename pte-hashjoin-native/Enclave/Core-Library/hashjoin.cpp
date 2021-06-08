@@ -22,27 +22,7 @@
  */
 
 
-// #include <stdio.h>
-// #include <stdlib.h>
 #include <string.h>
-// #include <unistd.h>
-
-// //#include <fcntl.h>
-// #include <limits.h>
-
-// //#include <sys/vfs.h>
-// #include <sys/types.h>
-// //#include <dirent.h>
-
-// //#include <sys/time.h>
-// #include <assert.h>
-// //#include <sys/stat.h>
-// //#include <sys/mman.h>
-// #include <inttypes.h>
-
-// #ifndef DEFAULT_MODE
-// #define DEFAULT_MODE 0777
-// #endif
 
 #include "config.h"
 #include "murmur3.h"
@@ -54,10 +34,10 @@
 #    include <omp.h>
 #endif
 
- int myposix_memalign(void **memptr, size_t alignment, size_t size){
+int myposix_memalign(void **memptr, size_t alignment, size_t size){
      *memptr = malloc(size);
      return 0;
- }
+}
 
 ///< this is a table element it has a key and a payload
 struct element
@@ -79,13 +59,9 @@ static void allocate(void **memptr, size_t size, size_t align)
 {
     printf("allocating %zu MB memory with alignment %zu \n", size >> 20, align);
     if (myposix_memalign(memptr, align, size)) {
-        // printf("ENOMEM\n");
         return;
     }
-    //*memptr = (uint8_t*) malloc(size);
     memset(*memptr, 0, size);
-    //printf("HI size %u\n", memptr + size);
-
 }
 
 
@@ -118,16 +94,9 @@ int ecall_real_main()
     allocate((void **)&hashtable, hashsize * sizeof(struct htelm *),
              CONFIG_CACHELINE_SIZE);
 
-
-
-    printf("In the code size %u\n", hashtable);
-
-
     /* allocate the hash table elements for the join */
     struct htelm *htelms;
     allocate((void **)&htelms, innersize * sizeof(struct htelm), CONFIG_LARGE_PAGE_SIZE);
-
-    printf("HI %d\n", innersize);
 
     size_t nconflicts = 0;
     for (size_t i = 0; i < innersize; i++) {
@@ -151,9 +120,6 @@ int ecall_real_main()
 
     size_t matches = 0;
     size_t loaded = 0;
-
-    // struct timeval tstart, tend;
-    // gettimeofday(&tstart, NULL);
 
     for (size_t j = 0; j < nlookups; j++) {
         for (size_t i = 0; i < outersize; i++) {
@@ -183,9 +149,7 @@ int ecall_real_main()
     }
 
     printf("got %zu matches / %zu matches per iteration of %zu \n", matches, matches / nlookups, 2 * outersize);
-    printf("hashtable conflicts = %zu\n", nconflicts);
-           
-    printf("Experiment DONE with conflicts = %zu\n", nconflicts);
+    printf("Experiment DONE with hashtable conflicts = %zu\n", nconflicts);
 
     return 0;
 }

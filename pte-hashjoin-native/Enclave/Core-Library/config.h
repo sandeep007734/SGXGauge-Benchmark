@@ -30,13 +30,13 @@
 #define CONFIG_HAVE_MODIFIED_KERNEL 1
 
 ///< the name of the shared memory file created
-#define CONFIG_SHM_FILE_NAME "/tmp/securefs-hashjoin-bench"
+// #define CONFIG_SHM_FILE_NAME "/tmp/securefs-hashjoin-bench"
 
 ///< the random seed
 #define CONFIG_RAND_SEED 42
 
 ///< the size of the outer table in elements
-#define CONFIG_DEFAULT_OUTER_SIZE 100000
+#define CONFIG_DEFAULT_OUTER_SIZE 1000000
 
 ///< the size of the inner table in elements
 #define CONFIG_DEFAULT_INNER_SIZE 100000
@@ -45,7 +45,7 @@
 #define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
 
 ///< the default amout of lookups
-#define CONFIG_DEFAULT_NUM_LOOKUPS 50
+#define CONFIG_DEFAULT_NUM_LOOKUPS 250
 
 ///< the key stride for the inner table
 #define CONFIG_INNER_KEY_STRIDE 4
