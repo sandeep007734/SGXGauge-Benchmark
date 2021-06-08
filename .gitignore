@@ -10,3 +10,4 @@ app
 .config_SIM_DEBUG_x64
 pte-hashjoin/.config_HW_DEBUG_x64
 hash_join/bin/bench_hashjoin_st
+pagerank-2-vanilla/bin/*

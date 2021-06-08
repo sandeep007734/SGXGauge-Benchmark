@@ -150,13 +150,21 @@ int ecall_real_main()
 
     uint64_t page_relation_size = 0;
     ocall_get_page_relation_count(PAGE_FILE_PATH, &page_relation_size);
+    ocall_load_pages(PAGE_FILE_PATH, page_relation_size);
 
     struct page_link* page_data = (struct page_link*) malloc(page_relation_size * sizeof(struct page_link));
 
     printf("Starting Location of page_data: %u \n", page_data);
     printf("Size of Memory to be allocated in Bytes: %lld \n", page_relation_size * sizeof(struct page_link));
 
-    ocall_get_page_data(PAGE_FILE_PATH, page_data, page_relation_size);
+
+    uint64_t pos;
+
+    for(uint64_t i = 0; i< page_relation_size; i+=256)
+    {
+        pos = ((i+256) < page_relation_size) ? 256 : (page_relation_size - i);
+        ocall_get_page_data((page_data + i), pos, i);
+    }
 
 
     pages = LoadPages(NUM_PAGES, noutlinks, page_data, page_relation_size);

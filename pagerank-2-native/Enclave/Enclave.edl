@@ -21,7 +21,8 @@ enclave {
     untrusted {
         void ocall_print_string([in, string] const char *str);
         void ocall_get_page_relation_count([in, string] char *filename, [in, out, count = 1] uint64_t *page_relation_size);
-        void ocall_get_page_data([in, string] char *filename, [in, out, count = page_relation_size] struct page_link *page_data, uint64_t page_relation_size);
+        void ocall_load_pages([in, string] char *filename, uint64_t page_relation_size);
+        void ocall_get_page_data([in, out, count = size] struct page_link *page_data, uint64_t size, uint64_t start_ptr);
     };
 
      trusted {

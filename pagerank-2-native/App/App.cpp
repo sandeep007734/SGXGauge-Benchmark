@@ -74,6 +74,9 @@ typedef struct _sgx_errlist_t {
     const char *sug; /* Suggestion */
 } sgx_errlist_t;
 
+static struct page_link* untrusted_page_data;
+static uint64_t page_mapping_size;
+
 /* Error code returned by sgx_create_enclave */
 static sgx_errlist_t sgx_errlist[] = {
     {
@@ -212,17 +215,29 @@ void ocall_get_page_relation_count(char *filename, uint64_t *page_relation_size)
     *page_relation_size = (uint64_t) s.st_size / sizeof(struct page_link) ;
 }
 
-void ocall_get_page_data(char *filename, struct page_link *page_data, uint64_t page_relation_size)
+void ocall_load_pages(char *filename, uint64_t page_relation_size)
 {
     FILE *fp = fopen(filename, "r");
-
+    page_mapping_size = page_relation_size;
+    untrusted_page_data = (struct page_link*) malloc(page_mapping_size * sizeof(struct page_link));
     struct page_link input;
     long i = 0;
     while(fread(&input, sizeof(struct page_link), 1, fp))
     {
-        page_data[i].src = input.src ;
-        page_data[i].dest = input.dest ;
+        untrusted_page_data[i].src = input.src ;
+        untrusted_page_data[i].dest = input.dest ;
         i++;
+    }
+}
+
+void ocall_get_page_data(struct page_link *page_data, uint64_t size, uint64_t start_ptr)
+{
+    uint64_t pos = 0;
+    while(pos < size)
+    {
+        page_data[pos].src = untrusted_page_data[pos + start_ptr].src ;
+        page_data[pos].dest = untrusted_page_data[pos + start_ptr].dest ;
+        pos++;
     }
 }
 
