@@ -90,7 +90,7 @@ int decrypt(char *ciphertext, int ciphertext_len, char *key,
      */
     if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
         handleErrors();
-    plaintext_len += len;
+    //plaintext_len += len;
 
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
@@ -135,7 +135,7 @@ int encrypt(char *plaintext, int plaintext_len, char *key,
      */
     if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
         handleErrors();
-    ciphertext_len += len;
+    //ciphertext_len += len;
 
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
@@ -160,6 +160,8 @@ void call_decrypt(){
     ocall_file_stat(enc_filename, &file_size);
     ocall_file_load(enc_filename, file_size);
 
+    printf("The file size is: %ld\n", file_size);
+
     new_bytes =(char *)malloc(file_size);
     dec_bytes =(char *)malloc(file_size - 20);
 
@@ -171,20 +173,27 @@ void call_decrypt(){
         ocall_read_file((new_bytes + i), pos, i);
     }
 
+    printf("Call Decrypt: Stat of the file: %ld \n", file_size);
+    printf("Call Decrypt : %s: \n", new_bytes);
+
     simpleSHA256(new_bytes, file_size, hash_bytes);
     print_hash();
+
+    uint64_t new_len = 0;
    
     /* Decrypt the ciphertext */
     if(new_bytes)
     {
-        uint64_t new_len = decrypt (new_bytes, file_size, key, iv, dec_bytes);
+        new_len = decrypt (new_bytes, file_size, key, iv, dec_bytes);
         simpleSHA256(dec_bytes, new_len, hash_bytes);
         print_hash();
     }
 
+    printf("new len after encryption : %s: \n", new_len);
+
     for(uint64_t i = 0; i< new_len; i+=4096)
     {
-        pos = ((i+4096) < file_size) ? 4096 : (file_size - i);
+        pos = ((i+4096) < new_len) ? 4096 : (new_len - i);
         ocall_write_file(dec_filename, (dec_bytes + i), pos);
     }
 
@@ -229,17 +238,25 @@ int ecall_real_main (void)
     simpleSHA256(new_bytes, file_size, hash_bytes);
     print_hash();
 
+    uint64_t new_len = 0;
+
     if(new_bytes)
     {
-        uint64_t new_len = encrypt (new_bytes, file_size, key, iv, enc_bytes);
+        new_len = encrypt (new_bytes, file_size, key, iv, enc_bytes);
         simpleSHA256(enc_bytes, new_len, hash_bytes);
         print_hash();
     }
 
+    printf("The created file is: %ld \n", new_len);
+    printf("The file size is: %ld \n", file_size);
+    printf("Plain Text: %s \n", new_bytes);
+    printf("Enc Bytes : %s: \n", enc_bytes);
+
+
     for(uint64_t i = 0; i< new_len; i+=4096)
     {
-        pos = ((i+4096) < file_size) ? 4096 : (file_size - i);
-        ocall_write_file(enc_filename, (enc_bytes + i), pos);
+        pos = ((i+4096) < new_len) ? 4096 : (new_len - i);
+        ocall_write_file(enc_filename, (enc_bytes + i), &pos);
     }
 
     free(enc_bytes);

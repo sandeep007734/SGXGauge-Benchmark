@@ -142,6 +142,9 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
         handleErrors();
     plaintext_len = len;
 
+    printf("The plaintext is at: %u \n", plaintext);
+    printf("The len is at: %d \n", len);
+
     if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
         handleErrors();
     plaintext_len += len;
@@ -238,16 +241,16 @@ int main(int argc, char *argv[])
 
     #ifdef NONPF
         printf("In NON PF Mode\n");
-        strcpy(filename,"datax.csv");
+        strcpy(filename,"/tmp/datax.csv");
     #else
         printf("In PF Mode\n");
-        strcpy(filename,"datax_pf.csv");
+        strcpy(filename,"/tmp/datax_pf.csv");
     #endif
 
     
 
-    strcpy(enc_filename,"/tmp/datax_enc.csv");
-    strcpy(dec_filename,"/tmp/datax_dec.csv");
+    strcpy(enc_filename,"/tmp/datax_enc_1.csv");
+    strcpy(dec_filename,"/tmp/datax_dec_1.csv");
 
     // sprintf(cmd,"rm -f %s", enc_filename);
     // system(cmd);
