@@ -18,8 +18,10 @@ from "sgx_pthread.edl" import *;
     untrusted {
         void ocall_print_string([in, string] const char *str);
         void ocall_file_stat([in, string] char *filename, [in, out] uint64_t *size);
-        void ocall_write_file([in, string] char *filename, [in, string] char *content, [in] uint64_t *size);
-        void ocall_read_file([in, out, count = size] char *content, uint64_t size, uint64_t start_ptr);
+
+        void ocall_write_file([in, string] char *filename, [in,count=size] char *content, uint64_t size, uint64_t start_ptr);
+        void ocall_read_file([in, string] char *filename, [out, count = size] char *content, uint64_t size, uint64_t start_ptr);
+
         void ocall_file_load([in, string] char *filename, uint64_t size);
     };
 

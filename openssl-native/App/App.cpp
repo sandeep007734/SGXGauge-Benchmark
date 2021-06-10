@@ -228,26 +228,54 @@ void ocall_file_load(char *filename, uint64_t size)
     close(fd);
 }
 
-void ocall_read_file(char *content, uint64_t size, uint64_t start_ptr)
+void ocall_read_file(char *filename,char *content, uint64_t size, uint64_t start_ptr)
 {
-    uint64_t pos = 0;
-    while(pos < size)
-    {
-        content[pos] = data[pos+start_ptr];
-        pos++;
-    }
-}
+    // uint64_t pos = 0;
+    // while(pos < size)
+    // {
+    //     content[pos] = data[pos+start_ptr];
+    //     pos++;
+    // }
 
-void ocall_write_file(char *filename, char *content, uint64_t *size)
-{
-    int fd=open(filename, O_CREAT|O_WRONLY|O_APPEND, 0644);
+    int fd=open(filename,O_RDONLY);
+    // data_len = size;
+    // if (data !=NULL)
+	// free(data);
+    // data = (char *) malloc(data_len * sizeof(char));
     if(fd > 0)
     {
-        write(fd, content, (size_t) *size);
+        lseek64(fd,start_ptr,SEEK_CUR);
+        read(fd,content,size);
+        // printf("ocall_read_file: file %s Reading %0X at %d of size %d\n",filename, content, start_ptr, size);
     }
     close(fd);
 }
 
+void ocall_write_file(char *filename, char *content, uint64_t size, uint64_t start_ptr)
+{
+    // int fd=open(filename, O_CREAT|O_WRONLY|O_APPEND, 0644);
+    // if(fd > 0)
+    // {   
+    //     write(fd, content, (size_t) *size);
+    // }
+    // close(fd);
+      int fd=open(filename, O_RDWR | O_CREAT,0644);
+    // data_len = size;
+    // if (data !=NULL)
+	// free(data);
+    // data = (char *) malloc(data_len * sizeof(char));
+    if(fd > 0)
+    {
+        lseek64(fd,start_ptr,SEEK_SET);
+        write(fd,content,size);
+        // printf("ocall_write: file %s Writing %0X at %d of size %d\n",filename, content, start_ptr, size);
+    }
+    close(fd);
+}
+
+
+char *enc_filename="/tmp/datax_enc.csv";
+char *dec_filename="/tmp/datax_dec.csv";
 
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
@@ -262,6 +290,9 @@ int SGX_CDECL main(int argc, char *argv[])
         printf("Info: Enclave raised unhandled exception.\n");
         return -1; 
     }
+
+    system("rm -f /tmp/datax_enc.csv");
+    system("rm -f /tmp/datax_dec.csv");
 
     struct timeval stop, start;
     gettimeofday(&start, NULL);

@@ -7,140 +7,185 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-/* A 256 bit key */
-char *key = (char *)"01234567890123456789012345678901";
+
+#define NODEBUG 0
+#define TMPINFO 1
+#define INFO 2
+#define INFOENC 2
+#define INFOREADWRITE 3
+#define VERBOSE 4
+#define VVERBOSE 5
+#define MISS 6
+#define ALL 7
+
+
+#define ISDEBUG NODEBUG
+
+#define AES_BLOCK_SIZE 16
+#define HASH_SIZE 32
+#define AES_KEY_SIZE 32
+
+#define CHUNK_DISK_SIZE 4096
+#define CHUNK_DATA_SIZE_BYTES (CHUNK_DISK_SIZE-AES_BLOCK_SIZE-HASH_SIZE)  // 4KB 4080 - 32 = 4048 // 4096-32 = 4064
+
+// /* A 256 bit key */
+// char *key = (char *)"01234567890123456789012345678901";
 
 /* A 128 bit IV */
-char *iv = (char *)"0123456789012345";
+// char *iv = (char *)"0123456789012345";
+uint8_t constiv[] = {0x01, 0x00, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+uint8_t const_key[] = {
+0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                       0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4};
+
 
 uint8_t *hash_bytes;
+char *enc_filename="/tmp/datax_enc.csv";
+char *dec_filename="/tmp/datax_dec.csv";
 
-void handleErrors(void)
-{
-    char *error_message = "An error has occured.";
-    printf("%s\n", error_message);
+
+void handleEncDecErrors(char *msg) {
+	printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
+	printf("errors OPENSSL Model.c %s\n", msg);
+	printf("Very much possible (almost certain) that you passed an INVALID Key for decryption.\n");
     abort();
 }
 
-char *enc_filename="/tmp/datax_enc.csv";
 
 int simpleSHA256(uint8_t *input, uint32_t len, uint8_t *output) {
-    EVP_MD_CTX *ctx;    
+	EVP_MD_CTX *ctx;
 
-    /* Create and initialise the context */
-    if (!(ctx = EVP_MD_CTX_new())) {
-        handleErrors();
-        return -1;
-    }
 
-    if (1 != EVP_DigestInit_ex(ctx, EVP_sha256(), NULL)) {
-        handleErrors();
-        return -1;
-    }
+	/* Create and initialise the context */
+	if (!(ctx = EVP_MD_CTX_new())) {
+		handleEncDecErrors("Encrypt ctx");
+		return -1;
+	}
 
-    if (1 != EVP_DigestUpdate(ctx, input, len)) {
-        handleErrors();
-        return -1;
-    }
-    uint32_t lengthOfHash = 0;
-    if (1 != EVP_DigestFinal_ex(ctx, output, &lengthOfHash)) {
-        handleErrors();
-        return -1;
-    }
+	if (1 != EVP_DigestInit_ex(ctx, EVP_sha256(), NULL)) {
+		handleEncDecErrors("encrypt_securefs init");
+		return -1;
+	}
 
-    /* Clean up */
-    EVP_MD_CTX_free(ctx);
-    return 0;
+	if (1 != EVP_DigestUpdate(ctx, input, len)) {
+		handleEncDecErrors("encrypt_securefs update");
+		return -1;
+	}
+	unsigned int lengthOfHash = 0;
+	if (1 != EVP_DigestFinal_ex(ctx, output, &lengthOfHash)) {
+		handleEncDecErrors("enc final");
+		return -1;
+	}
+
+	/* Clean up */
+	EVP_MD_CTX_free(ctx);
+	return 0;
 }
 
-int decrypt(char *ciphertext, int ciphertext_len, char *key,
-            char *iv, char *plaintext)
-{
-    EVP_CIPHER_CTX *ctx;
 
-    int len;
+int decrypt(uint8_t *ciphertext, int ciphertext_len, uint8_t *key,
+					 uint8_t *iv, uint8_t *plaintext) {
 
-    int plaintext_len;
+	EVP_CIPHER_CTX *ctx;
+	int len;
+	int plaintext_len;
 
-    /* Create and initialise the context */
-    if(!(ctx = EVP_CIPHER_CTX_new()))
-        handleErrors();
+	/* Create and initialise the context */
+	if (!(ctx = EVP_CIPHER_CTX_new())) {
+		handleEncDecErrors("dec ctx");
+		return -1;
+	}
+	EVP_CIPHER_CTX_set_padding(ctx, EVP_PADDING_PKCS7);
 
-    /*
-     * Initialise the decryption operation. IMPORTANT - ensure you use a key
-     * and IV size appropriate for your cipher
-     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-     * IV size for *most* modes is the same as the block size. For AES this
-     * is 128 bits
-     */
-    if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
-        handleErrors();
 
-    /*
-     * Provide the message to be decrypted, and obtain the plaintext output.
-     * EVP_DecryptUpdate can be called multiple times if necessary.
-     */
-    if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
-        handleErrors();
-    plaintext_len = len;
+	if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, key, iv)) {
+		handleEncDecErrors("dec init");
+		return -1;
+	}
 
-    /*
-     * Finalise the decryption. Further plaintext bytes may be written at
-     * this stage.
-     */
-    if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
-        handleErrors();
-    //plaintext_len += len;
+	if (ISDEBUG >= ALL)
+		printf("key len %d, iv len %d\n", EVP_CIPHER_key_length(EVP_aes_256_cbc()),
+			   EVP_CIPHER_iv_length(EVP_aes_256_cbc()));
 
-    /* Clean up */
-    EVP_CIPHER_CTX_free(ctx);
 
-    return plaintext_len;
+	if (!EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
+		handleEncDecErrors("dec update");
+		return -1;
+	}
+	plaintext_len = len;
+
+	if (ISDEBUG >= ALL) {
+		printf("DEC: plaintext len before final %d\n", plaintext_len);
+//        printf_ssl_dec_info(ciphertext, ciphertext_len, key, iv, plaintext);
+	}
+	/*
+	 * Finalise the decryption. Further plaintext bytes may be written at
+	 * this stage.
+	 */
+	if (!EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) {
+		printf("\n--------- ERROR ---------------\n");
+		printf("Key used:");
+		handleEncDecErrors("dec final");
+		return -1;
+	}
+	plaintext_len += len;
+
+	if (ISDEBUG >= ALL) {
+		printf("DEC: plaintext len AFTER final %d\n", plaintext_len);
+		printf_ssl_dec_info(ciphertext, ciphertext_len, key, iv, plaintext);
+	}
+
+	/* Clean up */
+	EVP_CIPHER_CTX_free(ctx);
+
+
+	return plaintext_len;
 }
 
-int encrypt(char *plaintext, int plaintext_len, char *key,
-            char *iv, char *ciphertext)
-{
-    EVP_CIPHER_CTX *ctx;
+int encrypt(uint8_t *plaintext, int plaintext_len, uint8_t *key,
+					 uint8_t *iv, uint8_t *ciphertext) {
 
-    int len;
+	EVP_CIPHER_CTX *ctx;
 
-    int ciphertext_len;
+	int len, ciphertext_len;
 
-    /* Create and initialise the context */
-    if(!(ctx = EVP_CIPHER_CTX_new()))
-        handleErrors();
+	/* Create and initialise the context */
+	if (!(ctx = EVP_CIPHER_CTX_new())) {
+		handleEncDecErrors("Encrypt ctx");
+		return -1;
+	}
+	EVP_CIPHER_CTX_set_padding(ctx, EVP_PADDING_PKCS7);
 
-    /*
-     * Initialise the encryption operation. IMPORTANT - ensure you use a key
-     * and IV size appropriate for your cipher
-     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-     * IV size for *most* modes is the same as the block size. For AES this
-     * is 128 bits
-     */
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
-        handleErrors();
+	if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, key, iv)) {
+		handleEncDecErrors("encrypt_securefs init");
+		return -1;
+	}
 
-    /*
-     * Provide the message to be encrypted, and obtain the encrypted output.
-     * EVP_EncryptUpdate can be called multiple times if necessary
-     */
-    if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
-        handleErrors();
-    ciphertext_len = len;
+	if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) {
+		handleEncDecErrors("encrypt_securefs update");
+		return -1;
+	}
+	ciphertext_len = len;
 
-    /*
-     * Finalise the encryption. Further ciphertext bytes may be written at
-     * this stage.
-     */
-    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
-        handleErrors();
-    //ciphertext_len += len;
+	if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) {
+		handleEncDecErrors("enc final");
+		return -1;
+	}
+	ciphertext_len += len;
 
-    /* Clean up */
-    EVP_CIPHER_CTX_free(ctx);
+	/* Clean up */
+	EVP_CIPHER_CTX_free(ctx);
 
-    return ciphertext_len;
+	return ciphertext_len;
+}
+
+void print_data(char *data, uint64_t len){
+    if (ISDEBUG==INFO){
+        for(int i=0;i<len;i++){
+            printf("%x",data[i]);
+        }
+        printf("\n");
+    }
 }
 
 void print_hash(void){
@@ -152,49 +197,47 @@ void print_hash(void){
 
 void call_decrypt(){
 
-    char *dec_filename="/tmp/datax_dec.csv";
-
     uint64_t file_size;
-    char *new_bytes, *dec_bytes;
+    char *new_bytes;
+    char *dec_bytes;
 
     ocall_file_stat(enc_filename, &file_size);
-    ocall_file_load(enc_filename, file_size);
-
-    printf("The file size is: %ld\n", file_size);
-
     new_bytes =(char *)malloc(file_size);
-    dec_bytes =(char *)malloc(file_size - 20);
 
     uint64_t pos;
 
-    for(uint64_t i = 0; i< file_size; i+=4096)
+    for(uint64_t i = 0; i< file_size; i+=CHUNK_DISK_SIZE)
     {
-        pos = ((i+4096) < file_size) ? 4096 : (file_size - i);
-        ocall_read_file((new_bytes + i), pos, i);
+        pos = ((i+CHUNK_DISK_SIZE) < file_size) ? CHUNK_DISK_SIZE : (file_size-i);
+        ocall_read_file(enc_filename, (new_bytes + i), pos, i);
     }
 
-    printf("Call Decrypt: Stat of the file: %ld \n", file_size);
-    printf("Call Decrypt : %s: \n", new_bytes);
+    printf("\nCall Decrypt: Stat of the file: %ld \n", file_size);
+    print_data(new_bytes, file_size);
 
+    printf("Its Hash:");
     simpleSHA256(new_bytes, file_size, hash_bytes);
     print_hash();
 
-    uint64_t new_len = 0;
+    uint64_t new_len = file_size-AES_BLOCK_SIZE;
+    dec_bytes =(char *)malloc(new_len+AES_BLOCK_SIZE);
    
     /* Decrypt the ciphertext */
     if(new_bytes)
-    {
-        new_len = decrypt (new_bytes, file_size, key, iv, dec_bytes);
+    {   
+        printf("\nDec: Decrypting...:\n");
+        decrypt (new_bytes, file_size, const_key, constiv, dec_bytes);
+        printf("Its hash:");
         simpleSHA256(dec_bytes, new_len, hash_bytes);
         print_hash();
     }
 
-    printf("new len after encryption : %s: \n", new_len);
+    printf("new len after encryption : %d: \n", new_len);
 
-    for(uint64_t i = 0; i< new_len; i+=4096)
+    for(uint64_t i = 0; i< new_len; i+=CHUNK_DISK_SIZE)
     {
-        pos = ((i+4096) < new_len) ? 4096 : (new_len - i);
-        ocall_write_file(dec_filename, (dec_bytes + i), pos);
+        pos = ((i+CHUNK_DISK_SIZE) < new_len) ? CHUNK_DISK_SIZE : (new_len - i);
+        ocall_write_file(dec_filename, (dec_bytes + i), &pos,&i);
     }
 
 
@@ -211,12 +254,10 @@ int ecall_real_main (void)
      */
 
 
-    /* Message to be encrypted */
-    char *plaintext = (char *)"The quick brown fox jumps over the lazy dog";
 
     char *filename="/tmp/datax.csv";
 
-    hash_bytes = (uint8_t *)malloc(32);
+    hash_bytes = (uint8_t *)malloc(HASH_SIZE);
 
     uint64_t file_size;
     char *new_bytes, *enc_bytes;
@@ -225,43 +266,65 @@ int ecall_real_main (void)
     ocall_file_load(filename, file_size);
 
     new_bytes =(char *)malloc(file_size);
-    enc_bytes =(char *)malloc(file_size + 20);
+    enc_bytes =(char *)malloc(file_size + AES_BLOCK_SIZE);
 
     uint64_t pos;
 
-    for(uint64_t i = 0; i< file_size; i+=4096)
+    printf("Reading the file.\n");
+    for(uint64_t i = 0; i< file_size; i+=CHUNK_DISK_SIZE)
     {
-        pos = ((i+4096) < file_size) ? 4096 : (file_size - i);
-        ocall_read_file((new_bytes + i), pos, i);
+        pos = ((i+CHUNK_DISK_SIZE) < file_size) ? CHUNK_DISK_SIZE : (file_size-i);
+        ocall_read_file(filename, new_bytes + i, pos, i);
     }
-
+    printf("Reading the file... Done\n");
+    if (ISDEBUG==INFO){
+        printf("The plain file size is: %ld \n", file_size);
+        printf("Plain Text: %s \n", new_bytes);
+    }
+    printf("Its Hash:");
     simpleSHA256(new_bytes, file_size, hash_bytes);
     print_hash();
 
-    uint64_t new_len = 0;
+    uint64_t new_len = file_size+AES_BLOCK_SIZE;
 
+    printf("\nEncrypting..:\n");
     if(new_bytes)
     {
-        new_len = encrypt (new_bytes, file_size, key, iv, enc_bytes);
+        encrypt (new_bytes, file_size, const_key, constiv, enc_bytes);
+
+        printf("Encrypting.. Done\n");
+        printf("The size encrypted file is: %ld \n", new_len);
+        print_data(enc_bytes, new_len);
+        printf("Its Hash: ");
         simpleSHA256(enc_bytes, new_len, hash_bytes);
         print_hash();
     }
 
-    printf("The created file is: %ld \n", new_len);
-    printf("The file size is: %ld \n", file_size);
-    printf("Plain Text: %s \n", new_bytes);
-    printf("Enc Bytes : %s: \n", enc_bytes);
+   
 
 
-    for(uint64_t i = 0; i< new_len; i+=4096)
+    for(uint64_t i = 0; i< new_len; i+=CHUNK_DISK_SIZE)
     {
-        pos = ((i+4096) < new_len) ? 4096 : (new_len - i);
-        ocall_write_file(enc_filename, (enc_bytes + i), &pos);
+        pos = ((i+CHUNK_DISK_SIZE) < new_len) ? CHUNK_DISK_SIZE : (new_len-i);
+        // printf("enc call ocall_write: Writing %0X at %d of size %d\n",(enc_bytes + i), i, pos);
+        ocall_write_file(enc_filename, (enc_bytes + i), pos, i);// filname, content, size
     }
 
     free(enc_bytes);
     free(new_bytes);
+    
+
+    // **********************************************
+    // ********************ENCRPT DONE**************
+    // **********************************************
+    // **********************************************
+
+
     call_decrypt();
+
+
+    /* Message to be encrypted */
+    char *plaintext = (char *)"The quick brown fox jumps over the lazy dog";
 
     /*
      * Buffer for ciphertext. Ensure the buffer is long enough for the
@@ -276,16 +339,16 @@ int ecall_real_main (void)
     int decryptedtext_len, ciphertext_len;
 
     /* Encrypt the plaintext */
-    ciphertext_len = encrypt (plaintext, strlen ((char *)plaintext), key, iv,
+    ciphertext_len = encrypt (plaintext, strlen ((char *)plaintext), const_key, constiv,
                               ciphertext);
 
 
     /* Do something useful with the ciphertext here */
-    printf("Ciphertext is:%s\n", ciphertext);
+    // printf("Ciphertext is:%s\n", ciphertext);
     //BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
 
     /* Decrypt the ciphertext */
-    decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv,
+    decryptedtext_len = decrypt(ciphertext, ciphertext_len, const_key, constiv,
                                 decryptedtext);
 
     /* Add a NULL terminator. We are expecting printable text */
