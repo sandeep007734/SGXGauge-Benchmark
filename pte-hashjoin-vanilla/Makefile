@@ -1,9 +1,11 @@
 CC = gcc
 CXX = g++
 
+WORKLOAD_TYPE= LOW
+
 # cflags used
-CFLAGS=-O3 -march=native
-CXXFLAGS=-O3 -march=native
+CFLAGS=-O3 -march=native -D$(WORKLOAD_TYPE)
+CXXFLAGS=-O3 -march=native -D$(WORKLOAD_TYPE)
 
 # common libraries used
 COMMON_LIBS=-lrt -ldl -lpthread -lm

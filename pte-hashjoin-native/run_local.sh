@@ -31,6 +31,9 @@ elif [ $EXEC_TYPE -eq 2 ];then
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
     CMD="./bin/bench_hashjoin_st ${BENCH_ARGS}"
+elif [ $EXEC_TYPE -eq 4 ];then
+    PREFIX="SGX-NATIVE-${BENCH}"
+    CMD="./app -u nobody ${BENCH_ARGS}"
 
 else
     echo "ERROR"
@@ -82,7 +85,6 @@ rm ${TMP_FILE}
 rm ${QUIT_FILE}
 
 # Restting the SGX counters
-
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o 1
     ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
@@ -91,26 +93,26 @@ else
     PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
 fi
 
-if [ $EXEC_TYPE -ne 4 ]; then
+#if [ $EXEC_TYPE -ne 4 ]; then
     $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
-else
-    echo ""
-    echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
-    echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
-    echo "make " ${BENCHHOME}/runme.sh
-    echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-    echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
-    chmod +x ${BENCHHOME}/runme.sh
+#else
+#    echo ""
+#    echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
+#    echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
+#     echo "make " ${BENCHHOME}/runme.sh
+#     echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
+#     echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
+#     chmod +x ${BENCHHOME}/runme.sh
 
-    echo "**************************"
-    echo "*********WAITING**********"
-    echo "**************************"
+#     #echo "**************************"
+#     #echo "*********WAITING**********"
+#     #echo "**************************"
 
-    while [ ! -f  ${TMP_FILE} ]; do
-        sleep 0.1
-    done  
-    # exit
-fi
+#     #while [ ! -f  ${TMP_FILE} ]; do
+#     #    sleep 0.1
+#     #done  
+#     # exit
+# fi
 
 while [ -z "$BENCHMARK_PID" ]; do
         sleep .5

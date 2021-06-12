@@ -21,35 +21,36 @@
  * SOFTWARE.
  */
 
-///< this is the cacheline size
-#define CONFIG_CACHELINE_SIZE 64
-
-#define CONFIG_LARGE_PAGE_SIZE (1 << 21)
-
-///< define this if you have a modified kernel with Mitosis support
-#define CONFIG_HAVE_MODIFIED_KERNEL 1
-
-///< the name of the shared memory file created
-// #define CONFIG_SHM_FILE_NAME "/tmp/securefs-hashjoin-bench"
-
-///< the random seed
 #define CONFIG_RAND_SEED 42
 
-///< the size of the outer table in elements
-#define CONFIG_DEFAULT_OUTER_SIZE 1000000
 
-///< the size of the inner table in elements
-#define CONFIG_DEFAULT_INNER_SIZE 100000
+#ifdef HIGH
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_DEFAULT_OUTER_SIZE 1000000
+    #define CONFIG_DEFAULT_INNER_SIZE 100000
+    #define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
+    #define CONFIG_DEFAULT_NUM_LOOKUPS 250
+    #define CONFIG_INNER_KEY_STRIDE 4
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-///< the size of the hash table
-#define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
+#elif LOW
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_DEFAULT_OUTER_SIZE 500000
+    #define CONFIG_DEFAULT_INNER_SIZE 5000
+    #define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
+    #define CONFIG_DEFAULT_NUM_LOOKUPS 250
+    #define CONFIG_INNER_KEY_STRIDE 4
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-///< the default amout of lookups
-#define CONFIG_DEFAULT_NUM_LOOKUPS 250
-
-///< the key stride for the inner table
-#define CONFIG_INNER_KEY_STRIDE 4
-
-
-///< the size of the tuple in quad words
-#define CONFIG_ELEMENT_TUPLE_SIZE 15
+#else
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_DEFAULT_OUTER_SIZE 750000
+    #define CONFIG_DEFAULT_INNER_SIZE 7000
+    #define CONFIG_DEFAULT_HASH_SIZE CONFIG_DEFAULT_INNER_SIZE
+    #define CONFIG_DEFAULT_NUM_LOOKUPS 250
+    #define CONFIG_INNER_KEY_STRIDE 4
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
+#endif
