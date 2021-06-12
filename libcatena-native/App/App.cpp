@@ -247,8 +247,9 @@ public:
     }  
   }
 
-  #define DIFFC 1
-  #define LEN 3
+  #define DIFFC 5 // Do not change this.
+  #define LEN 6 // Adjust this for LOW MED and HIGH
+  
   static BlockChain testBlockChain() 
   {
     BlockChain blockChain("Catena Test", DIFFC);
