@@ -149,14 +149,14 @@ int ecall_real_main()
         noutlinks[i] = 0;
     }
 
-    printf("Hi, There %d \n", NUM_PAGES);
+    // printf("Hi, There %d \n", NUM_PAGES);
 
     uint64_t page_relation_size = 0;
     ocall_get_page_relation_count(PAGE_FILE_PATH, &page_relation_size);
-    printf("Hi, There %d \n", NUM_PAGES);
+    // printf("Hi, There %d \n", NUM_PAGES);
     ocall_load_pages(PAGE_FILE_PATH, page_relation_size);
 
-    printf("Hi, There %d \n", NUM_PAGES);
+    // printf("Hi, There %d \n", NUM_PAGES);
 
     struct page_link* page_data = (struct page_link*) malloc(page_relation_size * sizeof(struct page_link));
 

@@ -14,13 +14,13 @@ EXEC_TYPE=$1
 
 
 BENCH="btree"
-EXP_NAME="graphene_2"
+EXP_NAME="sgxgauge"
 BENCH_ARGS=" "
-user=$(whoami)
+user=$(who|awk '{print $1}')
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="hashjoin"
+    MANIFEST_FILE="btree"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=1
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS} "
 elif [ $EXEC_TYPE -eq 2 ];then
@@ -30,11 +30,10 @@ elif [ $EXEC_TYPE -eq 2 ];then
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./bin/bench_hashjoin_st ${BENCH_ARGS}"
+    CMD="./bin/bench_btree_st ${BENCH_ARGS}"
 elif [ $EXEC_TYPE -eq 4 ];then
     PREFIX="SGX-NATIVE-${BENCH}"
     CMD="./app -u nobody ${BENCH_ARGS}"
-
 else
     echo "ERROR"
     exit 1
@@ -85,34 +84,18 @@ rm ${TMP_FILE}
 rm ${QUIT_FILE}
 
 # Restting the SGX counters
+
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o 1
     ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
     PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
 else
     PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
 fi
 
-#if [ $EXEC_TYPE -ne 4 ]; then
-    $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
-#else
-#    echo ""
-#    echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
-#    echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
-#     echo "make " ${BENCHHOME}/runme.sh
-#     echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-#     echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
-#     chmod +x ${BENCHHOME}/runme.sh
-
-#     #echo "**************************"
-#     #echo "*********WAITING**********"
-#     #echo "**************************"
-
-#     #while [ ! -f  ${TMP_FILE} ]; do
-#     #    sleep 0.1
-#     #done  
-#     # exit
-# fi
+$PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
 
 while [ -z "$BENCHMARK_PID" ]; do
         sleep .5
@@ -123,9 +106,9 @@ while [ -z "$BENCHMARK_PID" ]; do
             BENCHMARK_PID=$(ps aux|grep "graphene/sgx/libpal.so"|grep sgx|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         elif [ $EXEC_TYPE -eq 3 ];then
         
-            ps aux|grep ./bin/bench_hashjoin_st|grep -v color|grep -v perf|grep -v "grep"
-            ps aux|grep ./bin/bench_hashjoin_st|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
-            BENCHMARK_PID=$(ps aux|grep ./bin/bench_hashjoin_st|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            ps aux|grep ./bin/bench_btree_st|grep -v color|grep -v perf|grep -v "grep"
+            ps aux|grep ./bin/bench_btree_st|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
+            BENCHMARK_PID=$(ps aux|grep ./bin/bench_btree_st|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
 
         elif [ $EXEC_TYPE -eq 4 ];then
             echo "========"
@@ -147,12 +130,6 @@ SECONDS=0
 # ======================================================================================
 # ============================ CONT SETUP===============================================
 # ======================================================================================
-
-if [ "$user" = "sandeep" ]; then
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
-else
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
-fi
 
 echo "Starting the monitor"
 PERF_TIMER=1000
@@ -177,14 +154,17 @@ done
 wait $BENCHMARK_PID 2>/dev/null
 # kill -INT $PERF_PID &>/dev/null
 
-if [ "$user" = "sandeep" ]; then
-    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
-fi
+
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
-sudo chown -R abhishek:abhishek -- *
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+    sudo chown -R sandeep:sandeep -- *
+else
+    sudo chown -R abhishek:abhishek -- *
+fi
 
 echo "Cleaning"
 

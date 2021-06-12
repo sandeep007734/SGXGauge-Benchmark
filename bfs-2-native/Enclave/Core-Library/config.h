@@ -1,5 +1,5 @@
 
-#ifdef high
+#ifdef HIGH_
     #define MIN_NODES      20
     #define MAX_NODES      ULONG_MAX
     #define MIN_EDGES      50
@@ -7,9 +7,9 @@
     #define MIN_WEIGHT     1
     #define MAX_WEIGHT     10
     #define NUM_NODES      200000
-    #define GRAPH_FILE_PATH "/tmp/vertex_high.dat"
+    #define GRAPH_FILE_PATH "vertex_high.dat"
 
-#elif low
+#elif LOW_
     #define MIN_NODES      20
     #define MAX_NODES      ULONG_MAX
     #define MIN_EDGES      20
@@ -17,7 +17,7 @@
     #define MIN_WEIGHT     1
     #define MAX_WEIGHT     10
     #define NUM_NODES      200000
-    #define GRAPH_FILE_PATH "/tmp/vertex_low.dat"
+    #define GRAPH_FILE_PATH "vertex_low.dat"
 
 #else
     #define MIN_NODES      20
@@ -27,5 +27,5 @@
     #define MIN_WEIGHT     1
     #define MAX_WEIGHT     10
     #define NUM_NODES      200000
-    #define GRAPH_FILE_PATH "/tmp/vertex_medium.dat"
+    #define GRAPH_FILE_PATH "vertex_medium.dat"
 #endif

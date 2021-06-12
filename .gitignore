@@ -1,3 +1,6 @@
+*.dat
+graph_gen
+page_gen
 runme.sh
 *evaluation*
 *.config_HW_DEBUG_x64*
@@ -9,3 +12,4 @@ app
 *.out
 .config_SIM_DEBUG_x64
 */bin/*
+pagerank-2-native/pages_medium.dat

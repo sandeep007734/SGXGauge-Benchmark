@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 
-WORKLOAD_TYPE= LOW_SETTING
+WORKLOAD_TYPE= MEDIUM_
 
 
 # cflags used

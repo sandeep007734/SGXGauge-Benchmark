@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#ifdef HIGH_SETTING
+#ifdef HIGH_
     #define CONFIG_CACHELINE_SIZE 64
     #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
     #define CONFIG_HAVE_MODIFIED_KERNEL 1
@@ -31,7 +31,7 @@
     #define CONFIG_DEFAULT_KEY_STRIDE 2
     #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-#elif LOW_SETTING
+#elif LOW_
     #define CONFIG_CACHELINE_SIZE 64
     #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
     #define CONFIG_HAVE_MODIFIED_KERNEL 1

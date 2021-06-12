@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 
-WORKLOAD_TYPE = low
+WORKLOAD_TYPE = MEDIUM
 
 # cflags used
 CFLAGS=-O3 -march=native -D$(WORKLOAD_TYPE)
