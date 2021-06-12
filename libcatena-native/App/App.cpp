@@ -247,8 +247,8 @@ public:
     }  
   }
 
-  #define DIFFC 6
-  #define LEN 2
+  #define DIFFC 1
+  #define LEN 3
   static BlockChain testBlockChain() 
   {
     BlockChain blockChain("Catena Test", DIFFC);

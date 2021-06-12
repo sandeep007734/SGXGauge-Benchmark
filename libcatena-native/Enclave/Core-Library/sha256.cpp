@@ -203,19 +203,21 @@ void SHA256::finalize(unsigned char *digest)
     }
 }
  
-void ecall_sha256(const unsigned char *input, char *output, uint64_t input_size)
+void ecall_sha256(const unsigned char *input, unsigned char* output, uint64_t input_size)
 {
-    unsigned char digest[SHA256::DIGEST_SIZE];
-    memset(digest,0,SHA256::DIGEST_SIZE);
+    //unsigned char digest[SHA256::DIGEST_SIZE];
+    //memset(digest,0,SHA256::DIGEST_SIZE);
  
     SHA256 ctx = SHA256();
     ctx.init();
     ctx.update(input, input_size);
-    ctx.finalize(digest);
+    ctx.finalize(output);
 
+    /*output[2*SHA256::DIGEST_SIZE] = '\0';
     for (int i = 0; i < SHA256::DIGEST_SIZE; i++)
     {
-        output[i*2+1] = digest[i]%16;
-        output[i*2] = (digest[i]/16)%16;
-    }
+        output[i*2+1] = (digest[i]%16) < 10 ? '0' + (digest[i]%16) : 'a' + ((digest[i]%16) - 10); 
+        output[i*2] = ((digest[i]/16)%16) < 10 ? '0' + ((digest[i]/16)%16) : 'a' + (((digest[i]/16)%16) - 10);
+    }*/
+    
 }

@@ -32,7 +32,7 @@ public:
   NonceFinder(const std::string& input, size_t difficulty);
   ~NonceFinder();
   std::pair<bool, Result> find();
-  //SystemClock& getClock() { return clock_; }
+  SystemClock& getClock() { return clock_; }
 private:
   std::string input_;
   size_t difficulty_;
@@ -41,7 +41,7 @@ private:
   std::atomic<bool> cancelled_;
   Result result_;
   std::vector<ThreadPtr> workers_;
-  //SystemClock clock_;
+  SystemClock clock_;
 };
 
 }

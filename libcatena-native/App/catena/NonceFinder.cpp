@@ -24,8 +24,8 @@
 namespace catena {
 
 NonceFinder::NonceFinder(const std::string& input, size_t difficulty) : input_(input), difficulty_(difficulty) {
-  if (difficulty_ > 64) {
-    difficulty = 64;
+  if (difficulty_ > 32) {
+    difficulty = 32;
   }
   running_.store(false);
   cancelled_.store(false);
@@ -68,10 +68,10 @@ std::pair<bool, NonceFinder::Result> NonceFinder::find() {
         os.str("");
         os.clear();
         if (loopCounter % progressInterval == 0) {
-          // std::cout << "[PROGRESS] [Worker #"<<i<<"] => (loops=" << loopCounter 
-          //   << ") (nonce="<<nonce<<") (elapsed = " << clock_.elapsedSeconds() << " seconds) ... " << std::endl;
-            std::cout << "[PROGRESS] [Worker #"<<i<<"] => (loops=" << loopCounter 
-            << ") (nonce="<<nonce<<") ... " << std::endl;
+           std::cout << "[PROGRESS] [Worker #"<<i<<"] => (loops=" << loopCounter 
+             << ") (nonce="<<nonce<<") (elapsed = " << clock_.elapsedSeconds() << " seconds) ... " << std::endl;
+          //  std::cout << "[PROGRESS] [Worker #"<<i<<"] => (loops=" << loopCounter 
+          //  << ") (nonce="<<nonce<<") ... " << std::endl;
         }
         nonce += workerCount;
       }

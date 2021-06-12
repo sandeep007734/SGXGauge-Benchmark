@@ -19,7 +19,7 @@ enclave {
     };
 
     trusted {
-        public void ecall_sha256([in, string]const unsigned char *input, [in, out, count=65]char *output, uint64_t input_size);
+        public void ecall_sha256([in, string]const unsigned char *input, [in, out, count = 33] unsigned char *output, uint64_t input_size);
     };
 
 };

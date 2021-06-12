@@ -46,6 +46,6 @@ struct Hash {
 };
 
 
-//void ecall_sha256(const unsigned char *input, char *output, uint64_t input_size);
+//void ecall_sha256(const unsigned char *input, unsigned char *output, uint64_t input_size);
 
 #endif
