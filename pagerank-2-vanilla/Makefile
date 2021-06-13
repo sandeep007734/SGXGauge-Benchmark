@@ -1,9 +1,11 @@
 CC = gcc
 CXX = g++
 
+WORKLOAD_TYPE = low
+
 # cflags used
-CFLAGS=-O3 -march=native
-CXXFLAGS=-O3 -march=native
+CFLAGS=-O3 -march=native -D$(WORKLOAD_TYPE)
+CXXFLAGS=-O3 -march=native -D$(WORKLOAD_TYPE)
 
 # common libraries used
 COMMON_LIBS=-lrt -ldl -lpthread -lm
@@ -14,7 +16,7 @@ SRC_G=src/page_gen.c src/common.c src/common_rand.c
 DEPS=src/config.h
 
 # the targets
-all : bin/bfs bin/graph_gen
+all : bin/pagerank bin/page_gen
 
 ###############################################################################
 # bfs

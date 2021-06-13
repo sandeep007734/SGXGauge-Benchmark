@@ -53,7 +53,7 @@ QUIT_FILE="/tmp/alloctest-bench.quit"
 TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
-MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/perflog-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
 OUTFILE=${MAIN_DIR}"/perflog-"$PREFIX"-log.dat"
@@ -181,7 +181,7 @@ fi
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
-sudo chown -R catchabhisek:catchabhisek -- *
+sudo chown -R abhishek:abhishek -- *
 
 echo "Cleaning"
 

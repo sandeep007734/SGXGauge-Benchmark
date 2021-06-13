@@ -23,46 +23,46 @@
 namespace catena {
 
 template <typename T>
-// class Clock {
-// public:
-//   using TimePoint = std::chrono::time_point<T>;
-//   static TimePoint timeSinceEpoch() { return T::time_since_epoch(); }
-//   static uint64_t currentTimeMicros() { 
-//     return std::chrono::duration_cast<std::chrono::microseconds>(timeSinceEpoch()).count();
-//   }
-//   static uint64_t currentTimeMillis() { 
-//     return currentTimeMicros() / 1000;
-//   }
-//   static TimePoint now() { return T::now(); }
-//   Clock() { reset(); }
-//   Clock& reset() { start_ = mark_ = now(); return *this; }
-//   Clock& mark() { mark_ = now(); return *this; }
-//   auto elapsed() const { return now() - start_; }
-//   auto marked() const { return now() - mark_; }
-//   uint64_t elapsedMicros() const {
-//     return std::chrono::duration_cast<std::chrono::microseconds>(elapsed()).count();
-//   }
-//   uint64_t markedMicros() const {
-//     return std::chrono::duration_cast<std::chrono::microseconds>(marked()).count();
-//   }
-//   uint64_t elapsedMillis() const {
-//     return elapsedMicros() / 1000;
-//   }
-//   uint64_t markedMillis() const {
-//     return markedMicros() / 1000; 
-//   }
-//   double elapsedSeconds() const {
-//     return 0.001 * 0.001 * static_cast<double>(elapsedMicros());
-//   }
-//   double markedSeconds() const {
-//     return 0.001 * 0.001 * static_cast<double>(markedMicros());
-//   }
-// private:
-//   TimePoint start_;
-//   TimePoint mark_;
-// };
-// using SystemClock = Clock<std::chrono::system_clock>;
-// using SteadyClock = Clock<std::chrono::steady_clock>;
+class Clock {
+public:
+  using TimePoint = std::chrono::time_point<T>;
+  static TimePoint timeSinceEpoch() { return T::time_since_epoch(); }
+  static uint64_t currentTimeMicros() { 
+    return std::chrono::duration_cast<std::chrono::microseconds>(timeSinceEpoch()).count();
+  }
+  static uint64_t currentTimeMillis() { 
+    return currentTimeMicros() / 1000;
+  }
+  static TimePoint now() { return T::now(); }
+  Clock() { reset(); }
+  Clock& reset() { start_ = mark_ = now(); return *this; }
+  Clock& mark() { mark_ = now(); return *this; }
+  auto elapsed() const { return now() - start_; }
+  auto marked() const { return now() - mark_; }
+  uint64_t elapsedMicros() const {
+    return std::chrono::duration_cast<std::chrono::microseconds>(elapsed()).count();
+  }
+  uint64_t markedMicros() const {
+    return std::chrono::duration_cast<std::chrono::microseconds>(marked()).count();
+  }
+  uint64_t elapsedMillis() const {
+    return elapsedMicros() / 1000;
+  }
+  uint64_t markedMillis() const {
+    return markedMicros() / 1000; 
+  }
+  double elapsedSeconds() const {
+    return 0.001 * 0.001 * static_cast<double>(elapsedMicros());
+  }
+  double markedSeconds() const {
+    return 0.001 * 0.001 * static_cast<double>(markedMicros());
+  }
+private:
+  TimePoint start_;
+  TimePoint mark_;
+};
+using SystemClock = Clock<std::chrono::system_clock>;
+using SteadyClock = Clock<std::chrono::steady_clock>;
 
 
 class Scope {

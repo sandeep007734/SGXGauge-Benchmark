@@ -13,24 +13,24 @@ fi
 EXEC_TYPE=$1
 
 
-BENCH="hashjoin"
+BENCH="openssl"
 EXP_NAME="graphene_2"
 BENCH_ARGS=" "
 user=$(whoami)
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="hashjoin"
+    MANIFEST_FILE="openssl"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=1
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS} "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
-    MANIFEST_FILE="phashjoin"
+    MANIFEST_FILE="popenssl"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=0
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./bin/bench_hashjoin_st ${BENCH_ARGS}"
+    CMD="./encrypt ${BENCH_ARGS}"
 elif [ $EXEC_TYPE -eq 4 ];then
     PREFIX="SGX-NATIVE-${BENCH}"
     CMD="./app -u nobody ${BENCH_ARGS}"

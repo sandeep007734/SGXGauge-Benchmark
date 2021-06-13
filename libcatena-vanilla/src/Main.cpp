@@ -71,8 +71,17 @@ public:
     }
     
   }
-  #define DIFFC 6
-  #define LEN 2
+  
+  #define DIFFC 20
+
+  #ifdef high
+    #define LEN 8
+  #elif medium
+    #define LEN 5
+  #else
+    #define LEN 20
+  #endif
+
   static BlockChain testBlockChain() {
     BlockChain blockChain("Catena Test", DIFFC);
     blockChain.dump(std::cout);

@@ -35,6 +35,7 @@ SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
+WORKLOAD_TYPE = LOW_SETTING
 
 include $(SGX_SDK)/buildenv.mk
 
@@ -69,7 +70,7 @@ else
 endif
 
 SGX_COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
-                    -Waddress -Wsequence-point -Wformat-security \
+                    -Waddress -Wsequence-point -Wformat-security -D$(WORKLOAD_TYPE)\
                     -Wmissing-include-dirs -Wfloat-equal -Wundef -Wshadow \
                     -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls
 SGX_COMMON_CFLAGS := $(SGX_COMMON_FLAGS) -Wjump-misses-init -Wstrict-prototypes -Wunsuffixed-float-constants

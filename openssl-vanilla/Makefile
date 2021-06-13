@@ -1,9 +1,11 @@
 NONPF ?= 1
 
+WORKLOAD_TYPE ?= LOW
+
 FLAGS=
 ifeq ($(NONPF), 1)
 	# $(info BUilding in NON PF mode)
-	FLAGS += -DNONPF=1
+	FLAGS += -DNONPF=1 -D$(WORKLOAD_TYPE)=1
 else
 	# $(info BUilding in PF mode)
 endif

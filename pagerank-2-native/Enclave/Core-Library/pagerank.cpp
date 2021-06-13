@@ -143,14 +143,20 @@ int ecall_real_main()
     maps = (double*)malloc(sizeof(*maps)*NUM_PAGES*NUM_PAGES);
     noutlinks = (unsigned int*)malloc(sizeof(*noutlinks)*NUM_PAGES);
 
+    printf("Starting Location of rank, map, noutlink: %u, %u, %u \n", page_ranks, maps, noutlinks);
+
     for (i=0; i<NUM_PAGES; ++i) {
         noutlinks[i] = 0;
     }
 
+    printf("Hi, There %d \n", NUM_PAGES);
 
     uint64_t page_relation_size = 0;
     ocall_get_page_relation_count(PAGE_FILE_PATH, &page_relation_size);
+    printf("Hi, There %d \n", NUM_PAGES);
     ocall_load_pages(PAGE_FILE_PATH, page_relation_size);
+
+    printf("Hi, There %d \n", NUM_PAGES);
 
     struct page_link* page_data = (struct page_link*) malloc(page_relation_size * sizeof(struct page_link));
 

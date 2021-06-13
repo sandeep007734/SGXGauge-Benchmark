@@ -1,5 +1,6 @@
 CC=g++
-CXXFLAGS=-Iinclude -Isrc -Ithird-party -std=c++1y -g
+WORKLOAD_TYPE = low
+CXXFLAGS=-Iinclude -Isrc -Ithird-party -std=c++1y -g -D${WORKLOAD_TYPE}
 LDFLAGS=-lpthread
 PROJNAME=catena
 EXENAME=bin/$(PROJNAME)

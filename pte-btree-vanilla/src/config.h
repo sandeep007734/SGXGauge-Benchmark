@@ -21,29 +21,33 @@
  * SOFTWARE.
  */
 
-///< this is the cacheline size
-#define CONFIG_CACHELINE_SIZE 64
+#ifdef HIGH_SETTING
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_HAVE_MODIFIED_KERNEL 1
+    #define CONFIG_DEFAULT_NELEMENTS   (1UL << 21)
+    #define CONFIG_DEFAULT_NLOOKUP 1200000000UL
+    #define CONFIG_DEFAULT_ORDER 6
+    #define CONFIG_DEFAULT_KEY_STRIDE 2
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-///< this is the large page size alignment
-#define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+#elif LOW_SETTING
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_HAVE_MODIFIED_KERNEL 1
+    #define CONFIG_DEFAULT_NELEMENTS   (1UL << 20)
+    #define CONFIG_DEFAULT_NLOOKUP 1200000000UL
+    #define CONFIG_DEFAULT_ORDER 6
+    #define CONFIG_DEFAULT_KEY_STRIDE 2
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-///< define this if you have a modified kernel with Mitosis support
-#define CONFIG_HAVE_MODIFIED_KERNEL 1
-
-///< the name of the shared memory file created
-// #define CONFIG_SHM_FILE_NAME "/tmp/securefs-btree-bench"
-
-
-#define CONFIG_DEFAULT_NELEMENTS   (1UL << 21)
-
-///< the number of lookups
-#define CONFIG_DEFAULT_NLOOKUP 1200000000UL
-
-///< the default order of the tree
-#define CONFIG_DEFAULT_ORDER 6
-
-///< the default key stride
-#define CONFIG_DEFAULT_KEY_STRIDE 2
-
-///< the size of the tuple in quad words
-#define CONFIG_ELEMENT_TUPLE_SIZE 15
+#else
+    #define CONFIG_CACHELINE_SIZE 64
+    #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
+    #define CONFIG_HAVE_MODIFIED_KERNEL 1
+    #define CONFIG_DEFAULT_NELEMENTS   1548576UL
+    #define CONFIG_DEFAULT_NLOOKUP 1200000000UL
+    #define CONFIG_DEFAULT_ORDER 6
+    #define CONFIG_DEFAULT_KEY_STRIDE 2
+    #define CONFIG_ELEMENT_TUPLE_SIZE 15
+#endif

@@ -254,8 +254,13 @@ int ecall_real_main (void)
      */
 
 
-
-    char *filename="/tmp/datax.csv";
+    #ifdef HIGH
+    char *filename="/tmp/datax_high.csv";
+    #elif LOW
+    char *filename="/tmp/datax_low.csv";
+    #else
+    char *filename="/tmp/datax_medium.csv";
+    #endif
 
     hash_bytes = (uint8_t *)malloc(HASH_SIZE);
 

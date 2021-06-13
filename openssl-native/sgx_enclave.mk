@@ -35,6 +35,7 @@
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
 ENCLAVE_DIR=Enclave
+WORKLOAD_TYPE = LOW
 
 include $(SGX_SDK)/buildenv.mk
 
@@ -47,7 +48,7 @@ endif
 ifeq ($(SGX_ARCH), x86)
 	$(error x86 build is not supported, only x64!!)
 else
-	SGX_COMMON_CFLAGS := -m64 -Wall
+	SGX_COMMON_CFLAGS := -m64 -Wall -D$(WORKLOAD_TYPE)=1
 	SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
 	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x64/sgx_sign
 	SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r

@@ -10,16 +10,8 @@
 
 #include "common_rand.h"
 #include "common.h"
+#include "config.h"
 
-
-#define MIN_NODES      20
-#define MAX_NODES      ULONG_MAX
-#define MIN_EDGES      2
-#define MAX_INIT_EDGES 4
-#define MIN_WEIGHT     1
-#define MAX_WEIGHT     10
-
-#define NUM_NODES      132768
 
 using namespace std;
 
@@ -112,130 +104,13 @@ void LoadGraph(
 
 }
 
-/*
-void InitializeGraph(
-    Node **h_graph_nodes,
-    bool **h_graph_mask,
-    bool **h_updating_graph_mask,
-    bool **h_graph_visited,
-    int  **h_graph_edges,
-    int  **h_cost,
-    int numNodes,
-    char  *vertice_file_path,
-    char  *edge_file_path) {
-
-    node *graph = new node[numNodes];
-    int source = 0;
-    unsigned numEdges;
-    unsigned long nodeID;
-    unsigned weight;
-
-    *h_graph_nodes = (Node*) malloc(sizeof(Node)*numNodes);
-    *h_graph_mask = (bool*) malloc(sizeof(bool)*numNodes);
-    *h_updating_graph_mask = (bool*) malloc(sizeof(bool)*numNodes);
-    *h_graph_visited = (bool*) malloc(sizeof(bool)*numNodes);
-    *h_cost = (int*) malloc(sizeof(int)*numNodes);
-
-
-    for (int i = 0; i < numNodes; ++i) {
-        numEdges = abs(common_rand() % ( MAX_INIT_EDGES - MIN_EDGES + 1 )) + MIN_EDGES;
-        for ( unsigned j = 0; j < numEdges; j++ ) {
-            nodeID = abs(common_rand() % numNodes);
-            weight = abs(common_rand() % ( MAX_WEIGHT - MIN_WEIGHT + 1 )) + MIN_WEIGHT;
-            graph[i].push_back( edge() );
-            graph[i].back().dest = nodeID;
-            graph[i].back().weight = weight;
-            graph[nodeID].push_back( edge() );
-            graph[nodeID].back().dest = i;
-            graph[nodeID].back().weight = weight;
-        }
-    }
-
-    unsigned long totalEdges = 0;
-    for (int i = 0; i < numNodes; ++i) {
-        unsigned long numEdges = graph[i].size();
-        (*h_graph_nodes)[i].starting = totalEdges;
-        (*h_graph_nodes)[i].no_of_edges = numEdges;
-        (*h_graph_mask)[i] = false;
-        (*h_updating_graph_mask)[i] = false;
-        (*h_graph_visited)[i] = false;
-
-        totalEdges += numEdges;
-    }
-
-    *h_graph_edges = (int*) malloc(sizeof(int)*totalEdges);
-
-    struct graph_links* graph_data = (struct graph_links*) malloc(totalEdges * sizeof(struct graph_links));
-
-    int graph_size = 0;
-    for(int i=0; i < numNodes; i++)
-    {
-        for(int j=0; j < graph[i].size(); j++)
-        {
-            graph_data[graph_size].src = i;
-            graph_data[graph_size].dest = graph[i][j].dest;
-            graph_data[graph_size].weight = graph[i][j].weight;
-            graph_size++;
-        }
-    }
-
-
-
-    (*h_graph_mask)[source] = true;
-    (*h_graph_visited)[source] = true;
-
-    unsigned k = 0;
-    for ( unsigned long i = 0; i < numNodes; i++ ) {
-        for ( unsigned j = 0; j < graph[i].size(); j++ ) {
-            (*h_graph_edges)[k] = graph[i][j].dest;
-            ++k;
-        }
-    }
-
-    for(int i = 0; i < numNodes; ++i) {
-        (*h_cost)[i] = -1;
-    }
-    (*h_cost)[source] = 0;
-
-
-    if (vertice_file_path != NULL && edge_file_path != NULL) {
-		FILE *fp = fopen(vertice_file_path, "w");
-		for (int i=0; i<graph_size; ++i) {
-            fwrite (&graph_data[i], sizeof(struct graph_links), 1, fp);
-		}
-		fclose(fp);
-
-        printf("%d\n", graph_size);
-        printf("%ld\n", totalEdges);
-
-        int graph_load = 0;
-
-        fp = fopen(vertice_file_path, "r");
-        struct graph_links input;
-        while(fread(&input, sizeof(struct graph_links), 1, fp))
-        {
-            graph_load++;
-        }
-        printf("%d \n", graph_load);
-
-		fp = fopen(edge_file_path, "w");
-		for (int i=0; i<totalEdges; ++i) {
-			fprintf(fp, "%d\n", (*h_graph_edges)[i]);
-		}
-		fclose(fp);
-    }
-
-
-} */
-
-
 int main( int argc, char** argv) {
     char *vertice_file_path = NULL;
     char *edge_file_path = NULL;
     char *cost_file_path = NULL;
     unsigned int expected_no_of_nodes = 3000000;
     unsigned long int expected_total_cost = 26321966;
-    vertice_file_path = "/tmp/vertex.dat";
+    vertice_file_path = GRAPH_FILE_PATH;
 
     Node *h_graph_nodes;
     bool *h_graph_mask;

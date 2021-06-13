@@ -13,7 +13,7 @@ fi
 EXEC_TYPE=$1
 
 
-BENCH="hashjoin"
+BENCH="bfs"
 EXP_NAME="graphene_2"
 BENCH_ARGS=" "
 user=$(whoami)
