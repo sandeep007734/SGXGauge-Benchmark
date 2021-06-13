@@ -253,22 +253,16 @@ void ocall_read_file(char *filename,char *content, uint64_t size, uint64_t start
 
 void ocall_write_file(char *filename, char *content, uint64_t size, uint64_t start_ptr)
 {
-    // int fd=open(filename, O_CREAT|O_WRONLY|O_APPEND, 0644);
-    // if(fd > 0)
-    // {   
-    //     write(fd, content, (size_t) *size);
-    // }
-    // close(fd);
-      int fd=open(filename, O_RDWR | O_CREAT,0644);
-    // data_len = size;
-    // if (data !=NULL)
-	// free(data);
-    // data = (char *) malloc(data_len * sizeof(char));
+
+    // printf("ocall_write: file %s Writing %0X at %d of size %d\n",filename, content, start_ptr, size);
+    int fd=open(filename, O_RDWR | O_CREAT,0644);
     if(fd > 0)
     {
         lseek64(fd,start_ptr,SEEK_SET);
         write(fd,content,size);
         // printf("ocall_write: file %s Writing %0X at %d of size %d\n",filename, content, start_ptr, size);
+    }else{
+        perror("open");
     }
     close(fd);
 }

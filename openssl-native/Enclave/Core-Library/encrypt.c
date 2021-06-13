@@ -220,6 +220,7 @@ void call_decrypt(){
     print_hash();
 
     uint64_t new_len = file_size-AES_BLOCK_SIZE;
+    printf("new len after encryption : %lu \n", new_len);
     dec_bytes =(char *)malloc(new_len+AES_BLOCK_SIZE);
    
     /* Decrypt the ciphertext */
@@ -232,12 +233,13 @@ void call_decrypt(){
         print_hash();
     }
 
-    printf("new len after encryption : %d: \n", new_len);
+    printf("new len after encryption : %lu \n", new_len);
 
     for(uint64_t i = 0; i< new_len; i+=CHUNK_DISK_SIZE)
     {
+        // printf("DEC %s %d \n",dec_filename,i);
         pos = ((i+CHUNK_DISK_SIZE) < new_len) ? CHUNK_DISK_SIZE : (new_len - i);
-        ocall_write_file(dec_filename, (dec_bytes + i), &pos,&i);
+        ocall_write_file(dec_filename, (dec_bytes + i), pos,i);
     }
 
 
