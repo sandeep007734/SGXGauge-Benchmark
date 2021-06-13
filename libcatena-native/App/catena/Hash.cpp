@@ -37,7 +37,7 @@ std::string Hash::sha256(const std::string& input) {
   buf[65] = 0;
   for (int i = 0; i < 32; i++)
       sprintf(buf+i*2, "%02x", output[i]);
-  printf("The hash value is: %s \n", buf);
+  // printf("The hash value is: %s \n", buf);
   free(output);
 
   return std::string(buf);
