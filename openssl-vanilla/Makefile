@@ -1,6 +1,6 @@
 NONPF ?= 1
 
-WORKLOAD_TYPE ?= LOW
+WORKLOAD_TYPE ?= MEDIUM_
 
 FLAGS=
 ifeq ($(NONPF), 1)

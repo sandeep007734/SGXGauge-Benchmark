@@ -72,14 +72,14 @@ public:
     
   }
   
-  #define DIFFC 20
+  #define DIFFC 5
 
-  #ifdef high
+  #ifdef HIGH_
     #define LEN 8
-  #elif medium
+  #elif MEDIUM_
     #define LEN 5
   #else
-    #define LEN 20
+    #define LEN 3
   #endif
 
   static BlockChain testBlockChain() {

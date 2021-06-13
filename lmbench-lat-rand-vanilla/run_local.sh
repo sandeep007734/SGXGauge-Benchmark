@@ -11,18 +11,19 @@ if [ $# -eq 0 ];then
 fi
 
 EXEC_TYPE=$1
+WORKLOAD_TYPE=$2
 
 
-BENCH="lmbench-bw-mem"
+BENCH="lmbench-lat-rand"
 EXP_NAME="sgxgauge"
 user=$(who|awk '{print $1}')
 
-if [ "$WORKLOAD_TYPE" = "low" ]; then
-    BENCH_ARGS="-N 1000 65000000 rd"
-elif [ "$WORKLOAD_TYPE" = "medium" ]; then
-    BENCH_ARGS="-N 1000 100000000 rd"
-elif [ "$WORKLOAD_TYPE" = "high" ]; then
-    BENCH_ARGS="-N 1000 150000000 rd"
+if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
+    BENCH_ARGS="-N 5000"
+elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
+    BENCH_ARGS="-N 7500"
+elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
+    BENCH_ARGS="-N 10000"
 else
     echo "ERROR"
     exit 1
@@ -30,17 +31,17 @@ fi
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="bw-mem"
+    MANIFEST_FILE="hashjoin"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=1
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS} "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
-    MANIFEST_FILE="pbw-mem"
+    MANIFEST_FILE="phashjoin"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=0
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./bin/x86_64-Linux/bw_mem ${BENCH_ARGS}"
+    CMD="./bin/x86_64-Linux/lat_rand ${BENCH_ARGS}"
 elif [ $EXEC_TYPE -eq 4 ];then
     PREFIX="SGX-NATIVE-${BENCH}"
     CMD="./app -u nobody ${BENCH_ARGS}"
@@ -116,9 +117,9 @@ while [ -z "$BENCHMARK_PID" ]; do
             BENCHMARK_PID=$(ps aux|grep "graphene/sgx/libpal.so"|grep sgx|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         elif [ $EXEC_TYPE -eq 3 ];then
         
-            ps aux|grep ./bin/x86_64-Linux/bw_mem|grep -v color|grep -v perf|grep -v "grep"
-            ps aux|grep ./bin/x86_64-Linux/bw_mem|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
-            BENCHMARK_PID=$(ps aux|grep ./bin/x86_64-Linux/bw_mem|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            ps aux|grep ./bin/x86_64-Linux/lat_rand|grep -v color|grep -v perf|grep -v "grep"
+            ps aux|grep ./bin/x86_64-Linux/lat_rand|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
+            BENCHMARK_PID=$(ps aux|grep ./bin/x86_64-Linux/lat_rand|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
 
         elif [ $EXEC_TYPE -eq 4 ];then
             echo "========"

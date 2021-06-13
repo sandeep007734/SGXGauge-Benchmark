@@ -35,7 +35,7 @@
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
 ENCLAVE_DIR=Enclave
-WORKLOAD_TYPE = LOW
+WORKLOAD_TYPE = MEDIUM_
 
 include $(SGX_SDK)/buildenv.mk
 

@@ -1,5 +1,5 @@
 CC=g++
-WORKLOAD_TYPE = low
+WORKLOAD_TYPE = MEDIUM_
 CXXFLAGS=-Iinclude -Isrc -Ithird-party -std=c++1y -g -D${WORKLOAD_TYPE}
 LDFLAGS=-lpthread
 PROJNAME=catena

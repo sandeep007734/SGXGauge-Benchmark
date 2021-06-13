@@ -239,34 +239,22 @@ int main(int argc, char *argv[])
      struct timeval stop, start;
      char cmd[200];
 
-    #ifdef HIGH
-        #ifdef NONPF
-            printf("In NON PF Mode\n");
-            strcpy(filename, "/tmp/datax_high.csv");
-        #else
-            printf("In PF Mode\n");
-            strcpy(filename, "/tmp/datax_pf.csv");
-        #endif
-    #elif LOW
-        #ifdef NONPF
-            printf("In NON PF Mode\n");
-            strcpy(filename, "/tmp/datax_low.csv");
-        #else
-            printf("In PF Mode\n");
-            strcpy(filename, "/tmp/datax_pf.csv");
-        #endif
+    #ifndef NONPF
+        printf("In PF Mode\n");
+        strcpy(filename, "datax_pf.csv");
+    #elif HIGH_
+        printf("In NON PF Mode\n");
+        strcpy(filename, "datax_high.csv");
+    #elif LOW_
+        printf("In NON PF Mode\n");
+        strcpy(filename, "datax_low.csv");
     #else
-        #ifdef NONPF
-            printf("In NON PF Mode\n");
-            strcpy(filename, "/tmp/datax_medium.csv");
-        #else
-            printf("In PF Mode\n");
-            strcpy(filename, "/tmp/datax_pf.csv");
-        #endif
+        printf("In NON PF Mode\n");
+        strcpy(filename, "datax_medium.csv");
     #endif
 
-    strcpy(enc_filename,"/tmp/datax_enc_1.csv");
-    strcpy(dec_filename,"/tmp/datax_dec_1.csv");
+    strcpy(enc_filename,"datax_enc.csv");
+    strcpy(dec_filename,"datax_dec.csv");
 
     // sprintf(cmd,"rm -f %s", enc_filename);
     // system(cmd);

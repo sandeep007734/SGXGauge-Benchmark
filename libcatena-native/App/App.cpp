@@ -247,8 +247,15 @@ public:
     }  
   }
 
-  #define DIFFC 5 // Do not change this.
-  #define LEN 6 // Adjust this for LOW MED and HIGH
+  #define DIFFC 5
+
+  #ifdef HIGH_
+    #define LEN 8
+  #elif MEDIUM_
+    #define LEN 5
+  #else
+    #define LEN 3
+  #endif
   
   static BlockChain testBlockChain() 
   {

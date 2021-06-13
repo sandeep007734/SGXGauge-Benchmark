@@ -12,10 +12,11 @@ fi
 
 EXEC_TYPE=$1
 
+
 BENCH="openssl"
-EXP_NAME="graphene_2"
+EXP_NAME="sgxgauge"
 BENCH_ARGS=" "
-user=$(whoami)
+user=$(who|awk '{print $1}')
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
@@ -30,7 +31,9 @@ elif [ $EXEC_TYPE -eq 2 ];then
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
     CMD="./encrypt ${BENCH_ARGS}"
-
+elif [ $EXEC_TYPE -eq 4 ];then
+    PREFIX="SGX-NATIVE-${BENCH}"
+    CMD="./app -u nobody ${BENCH_ARGS}"
 else
     echo "ERROR"
     exit 1
@@ -53,7 +56,7 @@ QUIT_FILE="/tmp/alloctest-bench.quit"
 TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
-MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/perflog-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
 OUTFILE=${MAIN_DIR}"/perflog-"$PREFIX"-log.dat"
@@ -86,30 +89,13 @@ if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o 1
     ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
     PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
 else
     PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
 fi
 
-if [ $EXEC_TYPE -ne 4 ]; then
-    $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
-else
-    echo ""
-    echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
-    echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
-    echo "make " ${BENCHHOME}/runme.sh
-    echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-    echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
-    chmod +x ${BENCHHOME}/runme.sh
-
-    echo "**************************"
-    echo "*********WAITING**********"
-    echo "**************************"
-
-    while [ ! -f  ${TMP_FILE} ]; do
-        sleep 0.1
-    done  
-    # exit
-fi
+$PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
 
 while [ -z "$BENCHMARK_PID" ]; do
         sleep .5
@@ -145,12 +131,6 @@ SECONDS=0
 # ============================ CONT SETUP===============================================
 # ======================================================================================
 
-if [ "$user" = "sandeep" ]; then
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
-else
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
-fi
-
 echo "Starting the monitor"
 PERF_TIMER=1000
 SLEEP_DURATION=2
@@ -174,14 +154,17 @@ done
 wait $BENCHMARK_PID 2>/dev/null
 # kill -INT $PERF_PID &>/dev/null
 
-if [ "$user" = "sandeep" ]; then
-    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
-fi
+
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
-sudo chown -R abhishek:abhishek -- *
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+    sudo chown -R sandeep:sandeep -- *
+else
+    sudo chown -R abhishek:abhishek -- *
+fi
 
 echo "Cleaning"
 

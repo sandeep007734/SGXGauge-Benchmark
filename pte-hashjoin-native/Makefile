@@ -36,7 +36,7 @@ SGX_MODE ?= HW
 SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
 
-WORKLOAD_TYPE = low
+WORKLOAD_TYPE = MEDIUM_
 
 include $(SGX_SDK)/buildenv.mk
 

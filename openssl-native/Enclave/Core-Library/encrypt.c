@@ -40,8 +40,8 @@ uint8_t const_key[] = {
 
 
 uint8_t *hash_bytes;
-char *enc_filename="/tmp/datax_enc.csv";
-char *dec_filename="/tmp/datax_dec.csv";
+char *enc_filename="datax_enc.csv";
+char *dec_filename="datax_dec.csv";
 
 
 void handleEncDecErrors(char *msg) {
@@ -254,12 +254,12 @@ int ecall_real_main (void)
      */
 
 
-    #ifdef HIGH
-    char *filename="/tmp/datax_high.csv";
-    #elif LOW
-    char *filename="/tmp/datax_low.csv";
+    #ifdef HIGH_
+    char *filename="datax_high.csv";
+    #elif LOW_
+    char *filename="datax_low.csv";
     #else
-    char *filename="/tmp/datax_medium.csv";
+    char *filename="datax_medium.csv";
     #endif
 
     hash_bytes = (uint8_t *)malloc(HASH_SIZE);

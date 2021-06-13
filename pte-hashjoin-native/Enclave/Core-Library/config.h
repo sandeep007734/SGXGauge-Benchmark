@@ -24,7 +24,7 @@
 #define CONFIG_RAND_SEED 42
 
 
-#ifdef high
+#ifdef HIGH_
     #define CONFIG_CACHELINE_SIZE 64
     #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
     #define CONFIG_DEFAULT_OUTER_SIZE 1000000
@@ -34,7 +34,7 @@
     #define CONFIG_INNER_KEY_STRIDE 4
     #define CONFIG_ELEMENT_TUPLE_SIZE 15
 
-#elif low
+#elif LOW_
     #define CONFIG_CACHELINE_SIZE 64
     #define CONFIG_LARGE_PAGE_SIZE (1 << 21)
     #define CONFIG_DEFAULT_OUTER_SIZE 500000

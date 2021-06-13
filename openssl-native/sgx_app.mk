@@ -36,7 +36,7 @@ SGX_MODE ?= HW
 SGX_ARCH ?= x64
 UNTRUSTED_DIR=App
 
-WORKLOAD_TYPE = LOW
+WORKLOAD_TYPE = MEDIUM_
 
 include $(SGX_SDK)/buildenv.mk
 
