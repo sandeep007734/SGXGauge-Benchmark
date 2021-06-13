@@ -19,7 +19,7 @@ DEPS=src/config.h
 all : bin/pagerank bin/page_gen
 
 ###############################################################################
-# bfs
+# pagerank
 ###############################################################################
 
 bin/pagerank: $(SRC_S) $(DEPS)
@@ -27,6 +27,10 @@ bin/pagerank: $(SRC_S) $(DEPS)
 
 bin/page_gen: $(SRC_G) $(DEPS)
 	$(CC) $(INCLUDES) $(CFLAGS) $(SRC_G) -o $@  $(COMMON_LIBS)
+
+pagerank.manifest.sgx : pagerank.manifest
+	@echo "Building pagerank"
+	./build_manifest_andsign.sh pagerank
 
 clean:
 	rm -rf bin/*

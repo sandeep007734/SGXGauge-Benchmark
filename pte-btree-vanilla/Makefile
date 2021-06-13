@@ -30,9 +30,9 @@ btree.manifest.sgx : btree.manifest bin/bench_btree_st
 	@echo "Building btree"
 	./build_manifest_andsign.sh btree
 
-pbtree.manifest.sgx : pbtree.manifest bin/bench_btree_st
-	@echo "Building pbtree"
-	./build_manifest_andsign.sh pbtree
+# pbtree.manifest.sgx : pbtree.manifest bin/bench_btree_st
+# 	@echo "Building pbtree"
+# 	./build_manifest_andsign.sh pbtree
 
 clean:
 	rm -rf bin/*

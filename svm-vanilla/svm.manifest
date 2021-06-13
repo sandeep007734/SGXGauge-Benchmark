@@ -1,17 +1,11 @@
-libos.entrypoint = "file:encrypt"
+libos.entrypoint = "file:svm-predict"
 
-sgx.allowed_files.catena = "file:encrypt"
-sgx.allowed_files.one = "file:datax_medium.csv"
-sgx.allowed_files.two = "file:datax_enc.csv"
-sgx.allowed_files.three = "file:datax_dec.csv"
+sgx.allowed_files.catena = "file:svm-predict"
+sgx.allowed_files.one = "file:news20.te"
+sgx.allowed_files.two = "file:news20.tr.model"
+sgx.allowed_files.three = "file:output"
 
-# BENCH related
-
-fs.mount.wd.type = "chroot"
-fs.mount.wd.path = "/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/openssl"
-fs.mount.wd.uri = "file:/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/openssl"
-sgx.allowed_files.cwddir = "file:/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/openssl"
-
+  
 
 # =========================================
 

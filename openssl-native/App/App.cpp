@@ -268,8 +268,8 @@ void ocall_write_file(char *filename, char *content, uint64_t size, uint64_t sta
 }
 
 
-char *enc_filename="/tmp/datax_enc.csv";
-char *dec_filename="/tmp/datax_dec.csv";
+// char *enc_filename="/tmp/datax_enc.csv";
+// char *dec_filename="/tmp/datax_dec.csv";
 
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
@@ -285,8 +285,8 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
 
-    system("rm -f /tmp/datax_enc.csv");
-    system("rm -f /tmp/datax_dec.csv");
+    // system("rm -f /tmp/datax_enc.csv");
+    // system("rm -f /tmp/datax_dec.csv");
 
     struct timeval stop, start;
     gettimeofday(&start, NULL);

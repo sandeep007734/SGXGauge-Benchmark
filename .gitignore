@@ -1,3 +1,6 @@
+*.sig
+*.token
+*.sgx
 *.dat
 graph_gen
 page_gen
@@ -13,3 +16,4 @@ app
 .config_SIM_DEBUG_x64
 */bin/*
 pagerank-2-native/pages_medium.dat
+openssl-native/datax.csv

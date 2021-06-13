@@ -28,5 +28,9 @@ bin/bfs: $(SRC_S) $(DEPS)
 bin/graph_gen: $(SRC_G) $(DEPS)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) $(SRC_G) -o $@  $(COMMON_LIBS)
 
+bfs.manifest.sgx : bfs.manifest
+	@echo "Building bfs"
+	./build_manifest_andsign.sh bfs
+	
 clean:
 	rm -rf bin/*

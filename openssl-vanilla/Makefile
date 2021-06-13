@@ -21,9 +21,9 @@ openssl.manifest.sgx : openssl.manifest encrypt
 	@echo "Building openssl"
 	./build_manifest_andsign.sh openssl
 
-popenssl.manifest.sgx : popenssl.manifest encrypt
-	@echo "Building popenssl"
-	./build_manifest_andsign.sh popenssl
+# popenssl.manifest.sgx : popenssl.manifest encrypt
+# 	@echo "Building popenssl"
+# 	./build_manifest_andsign.sh popenssl
 
 
 clean:
