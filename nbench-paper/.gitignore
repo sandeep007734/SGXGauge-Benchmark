@@ -1,0 +1,12 @@
+
+*.o
+evaluation/
+hardware.o
+pointer
+sysinfo.c
+sysinfoc.c
+nbench.manifest.sgx
+nbench.sig
+nbench.token
+CONF.DAT
+pointer.h

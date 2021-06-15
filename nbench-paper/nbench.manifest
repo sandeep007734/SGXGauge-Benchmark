@@ -1,0 +1,27 @@
+loader.preload = "file:/usr/local/lib/x86_64-linux-gnu/graphene/libsysdb.so"
+libos.entrypoint = "file:./nbench"
+
+loader.insecure__use_cmdline_argv = 1
+
+loader.log_level = "error"
+
+loader.env.LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu"
+loader.env.PATH = "/usr/bin"
+
+fs.mount.lib.type = "chroot"
+fs.mount.lib.path = "/lib"
+fs.mount.lib.uri = "file:/usr/local/lib/x86_64-linux-gnu/graphene/runtime/glibc"
+
+fs.mount.lib64.type = "chroot"
+fs.mount.lib64.path = "/lib/x86_64-linux-gnu"
+fs.mount.lib64.uri = "file:/lib/x86_64-linux-gnu"
+
+sgx.enclave_size = "4G"
+sgx.thread_num = 20
+
+sgx.allowed_files.scripts = "file:nbench"
+sgx.allowed_files.dat = "file:NNET.DAT"
+sgx.allowed_files.cnf = "file:CONF.DAT"
+
+sgx.nonpie_binary = 1
+sgx.enable_stats = 1
