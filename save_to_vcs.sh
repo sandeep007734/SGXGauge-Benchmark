@@ -12,7 +12,6 @@ git pull
 
 read -p "Pull done"
 
-git commit -n
 
 read -p "Commit?"
 
