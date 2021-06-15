@@ -14,12 +14,12 @@ do
     sudo -H -E ./run_local.sh 3 $cnf
 done
 
-for cnf in $(cat all_config)
-do
-    echo "ALLSTATS=T" > CONF.DAT
-    echo "CUSTOMRUN=T" >> CONF.DAT
-    echo DO${cnf}=T >> CONF.DAT
-    cat GLOBSETTING >> CONF.DAT
+# for cnf in $(cat all_config)
+# do
+#    echo "ALLSTATS=T" > CONF.DAT
+#    echo "CUSTOMRUN=T" >> CONF.DAT
+#    echo DO${cnf}=T >> CONF.DAT
+#    cat GLOBSETTING >> CONF.DAT
 
-    sudo -H -E ./run_local.sh 1 $cnf
-done
+#    sudo -H -E ./run_local.sh 1 $cnf
+# done

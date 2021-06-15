@@ -54,6 +54,7 @@
 #include "nmglobal.h"
 #include "nbench0.h"
 #include "hardware.h"
+#include <sys/time.h>
 
 /*************
 **** main ****
@@ -121,6 +122,9 @@ lx_fpindex=(double)1.0;
 intindex=(double)1.0;
 fpindex=(double)1.0;
 mem_array_ents=0;               /* Nothing in mem array */
+
+struct timeval stop, start;
+gettimeofday(&start, NULL);
 
 /*
 ** We presume all tests will be run unless told
@@ -328,6 +332,10 @@ if(global_custrun==0)
 #endif
 output_string("* Trademarks are property of their respective holder.\n");
 }
+
+gettimeofday(&stop, NULL);
+fprintf(stderr, "SECUREFS_TIME %lu us\n",
+        (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 
 exit(0);
 }

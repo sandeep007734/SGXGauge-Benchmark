@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include "svm.h"
+#include <sys/time.h>
 
 int print_null(const char *s,...) {return 0;}
 
@@ -171,6 +172,9 @@ int main(int argc, char **argv)
 {
 	FILE *input, *output;
 	int i;
+	struct timeval stop, start;
+    gettimeofday(&start, NULL);
+
 	// parse options
 	for(i=1;i<argc;i++)
 	{
@@ -235,5 +239,8 @@ int main(int argc, char **argv)
 	free(line);
 	fclose(input);
 	fclose(output);
+	gettimeofday(&stop, NULL);
+    fprintf(stderr, "SECUREFS_TIME %lu us\n",
+        (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 	return 0;
 }

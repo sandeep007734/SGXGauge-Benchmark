@@ -122,6 +122,9 @@ int main( int argc, char** argv) {
 
     struct stat buf;
 
+    struct timeval stop_time, start;
+    gettimeofday(&start, NULL);
+
     int fd=open(vertice_file_path,O_RDONLY);
 
     FILE *fp = fopen(vertice_file_path, "r");
@@ -226,6 +229,9 @@ int main( int argc, char** argv) {
     free(h_cost);
 
     fprintf(stdout, "{\"options\": \"%d\", \"time\": %f, \"status\": %d, \"output\": %lu }\n", NUM_NODES, get_interval_by_sec(&sw1), 1, total_cost);
+    gettimeofday(&stop_time, NULL);
+    fprintf(stderr, "SECUREFS_TIME %lu us\n",
+        (stop_time.tv_sec - start.tv_sec) * 1000000 + stop_time.tv_usec - start.tv_usec);
     return 0;
 }
 

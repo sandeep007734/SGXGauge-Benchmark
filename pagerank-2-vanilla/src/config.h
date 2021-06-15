@@ -1,4 +1,4 @@
-#ifdef HIGH
+#ifdef HIGH_
     #define D_FACTOR       0.85
     #define MAX_ITER       1000
     #define THRESHOLD      0.00001
@@ -6,7 +6,7 @@
     #define DIVISOR        2
     #define PAGE_FILE_PATH "pages_high.dat"
 
-#elif LOW
+#elif LOW_
     #define D_FACTOR       0.85
     #define MAX_ITER       1000
     #define THRESHOLD      0.00001

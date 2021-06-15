@@ -11,12 +11,23 @@ if [ $# -eq 0 ];then
 fi
 
 EXEC_TYPE=$1
-
+WORKLOAD_TYPE=$2
 
 BENCH="svm"
 EXP_NAME="sgxgauge"
-BENCH_ARGS="news20.te news20.tr.model output"
+BENCH_ARGS=""
 user=$(who|awk '{print $1}')
+
+if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
+    BENCH_ARGS="usps.te usps.tr.model output"
+elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
+    BENCH_ARGS="news20.te news20.tr.model output"
+elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
+    BENCH_ARGS="-N 10000"
+else
+    echo "ERROR"
+    exit 1
+fi
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"

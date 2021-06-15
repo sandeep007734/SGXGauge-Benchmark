@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <fcntl.h> 
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include "common_rand.h"
 #include "common.h"
@@ -118,6 +119,9 @@ int main(int argc, char *argv[]){
     uint64_t i = 0, j;
     double sum = 0;
     int nb_links = 0;
+
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
     
     max_diff=99.0;
     page_ranks = (double*)malloc(sizeof(*page_ranks)*NUM_PAGES);
@@ -191,4 +195,8 @@ int main(int argc, char *argv[]){
     free(maps);
     free(page_ranks);
     free(noutlinks);
+
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "SECUREFS_TIME %lu us\n",
+        (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 }
