@@ -1,0 +1,22 @@
+/* 
+ * Aisha Hasan
+ *
+ * Enclave.edl - Top EDL file.
+ *
+ */
+
+enclave {
+    
+    include "common_types.h" /* struct timeval */
+
+	trusted {
+	 	public void ecall_print_string([in, size=5] const char *str);
+	 	public void ecall_send_params(int parallel, int warmup, int repetitions);
+	};
+
+    untrusted {
+		void ocall_print_string([in, size=256] const char *str);
+		void ocall_gettimeofday([out] struct mytimeval *tv); 
+	};
+
+};

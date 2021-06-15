@@ -44,7 +44,7 @@ elif [ $EXEC_TYPE -eq 3 ];then
     CMD="./bin/x86_64-Linux/lat_rand ${BENCH_ARGS}"
 elif [ $EXEC_TYPE -eq 4 ];then
     PREFIX="SGX-NATIVE-${BENCH}"
-    CMD="./app -u nobody ${BENCH_ARGS}"
+    CMD="./lat_rand ${BENCH_ARGS}"
 else
     echo "ERROR"
     exit 1
@@ -123,10 +123,10 @@ while [ -z "$BENCHMARK_PID" ]; do
 
         elif [ $EXEC_TYPE -eq 4 ];then
             echo "========"
-            ps aux|grep app|grep nobody|grep -v color|grep -v perf|grep -v "grep"
+            ps aux|grep lat_rand|grep -v color|grep -v perf|grep -v "grep"
             echo "========"
-            # ps aux|grep app|grep nobody|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
-            BENCHMARK_PID=$(ps aux|grep app|grep nobody|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            # ps aux|grep lat_rand|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
+            BENCHMARK_PID=$(ps aux|grep lat_rand|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         fi
         echo "========"
         echo "Benchmark PID is "$BENCHMARK_PID
