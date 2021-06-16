@@ -3,3 +3,4 @@ svm-scale
 svm-predict
 svm-train
 output
+*.model

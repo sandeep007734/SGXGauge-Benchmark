@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/time.h>
 #include "svm.h"
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
 
@@ -86,6 +87,9 @@ int main(int argc, char **argv)
 	char model_file_name[1024];
 	const char *error_msg;
 
+	struct timeval stop, start;
+    gettimeofday(&start, NULL);
+
 	parse_command_line(argc, argv, input_file_name, model_file_name);
 	read_problem(input_file_name);
 	error_msg = svm_check_parameter(&prob,&param);
@@ -115,6 +119,10 @@ int main(int argc, char **argv)
 	free(prob.x);
 	free(x_space);
 	free(line);
+
+	gettimeofday(&stop, NULL);
+    fprintf(stderr, "SECUREFS_TIME %lu us\n",
+        (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 
 	return 0;
 }
