@@ -51,8 +51,7 @@ void LoadGraph(
     int  **h_cost,
     int numNodes,
     struct graph_links  *graph_data,
-    long long graph_size)
-{
+    long long graph_size){
     node *graph = new node[numNodes];
     int source = 0;
 
@@ -104,6 +103,30 @@ void LoadGraph(
 
 }
 
+void reset_graph(
+    bool **h_graph_mask,
+    bool **h_updating_graph_mask,
+    bool **h_graph_visited,
+    int  **h_cost,
+    int numNodes){
+    int source = 0;
+
+    for (int i = 0; i < numNodes; ++i) {
+        (*h_graph_mask)[i] = false;
+        (*h_updating_graph_mask)[i] = false;
+        (*h_graph_visited)[i] = false;
+    }
+
+    (*h_graph_mask)[source] = true;
+    (*h_graph_visited)[source] = true;
+
+    for(int i = 0; i < numNodes; ++i) {
+        (*h_cost)[i] = -1;
+    }
+    
+    (*h_cost)[source] = 0;
+}
+
 int main( int argc, char** argv) {
     char *vertice_file_path = NULL;
     char *edge_file_path = NULL;
@@ -121,6 +144,7 @@ int main( int argc, char** argv) {
     stopwatch sw1, sw2;
 
     struct stat buf;
+    unsigned long total_cost = 0;
 
     struct timeval stop_time, start;
     gettimeofday(&start, NULL);
@@ -146,17 +170,6 @@ int main( int argc, char** argv) {
     }
 
     stopwatch_start(&sw2);
-    /*InitializeGraph(
-        &h_graph_nodes,
-        &h_graph_mask,
-        &h_updating_graph_mask,
-        &h_graph_visited,
-        &h_graph_edges,
-        &h_cost,
-        no_of_nodes,
-        vertice_file_path,
-        edge_file_path);*/
-
     LoadGraph(
         &h_graph_nodes,
         &h_graph_mask,
@@ -167,58 +180,62 @@ int main( int argc, char** argv) {
         NUM_NODES,
         graph_data,
         graph_size);
-
     stopwatch_stop(&sw2);
 
-    stopwatch_start(&sw1);
-    bool stop;
-    do
+    for (int iter=0; iter<5000; iter++)
     {
-//if no thread changes this value then the loop stops
-        stop=false;
-
-        for(int tid = 0; tid < NUM_NODES; tid++ )
+        //int count = 0;
+        stopwatch_start(&sw1);
+        bool stop;
+        total_cost = 0;
+        do
         {
-            if (h_graph_mask[tid] == true){
-                h_graph_mask[tid]=false;
-                for(int i=h_graph_nodes[tid].starting; i<(h_graph_nodes[tid].no_of_edges + h_graph_nodes[tid].starting); i++)
+            //if no thread changes this value then the loop stops
+            stop=false;
+
+            for(int tid = 0; tid < NUM_NODES; tid++)
+            {
+                if (h_graph_mask[tid] == true)
                 {
-                    int id = h_graph_edges[i];
-                    if(!h_graph_visited[id])
+                    h_graph_mask[tid]=false;
+                    for(int i=h_graph_nodes[tid].starting; i<(h_graph_nodes[tid].no_of_edges + h_graph_nodes[tid].starting); i++)
                     {
-                        h_cost[id]=h_cost[tid]+1;
-                        h_updating_graph_mask[id]=true;
+                        int id = h_graph_edges[i];
+                        if(!h_graph_visited[id])
+                        {
+                            h_cost[id]=h_cost[tid]+1;
+                            h_updating_graph_mask[id]=true;
+                            //count++;
+                        }
                     }
                 }
             }
-        }
 
-        for(int tid=0; tid< NUM_NODES ; tid++ )
-        {
-            if (h_updating_graph_mask[tid] == true){
-                h_graph_mask[tid]=true;
-                h_graph_visited[tid]=true;
-                stop=true;
-                h_updating_graph_mask[tid]=false;
+            for(int tid=0; tid< NUM_NODES ; tid++ )
+            {
+                if (h_updating_graph_mask[tid] == true){
+                    h_graph_mask[tid]=true;
+                    h_graph_visited[tid]=true;
+                    stop=true;
+                    h_updating_graph_mask[tid]=false;
+                }
             }
         }
-    }
-    while(stop);
-    stopwatch_stop(&sw1);
+        while(stop);
+        stopwatch_stop(&sw1);
 
-    unsigned long total_cost = 0;
-    for(int i=0;i<NUM_NODES;i++) {
-        total_cost += h_cost[i];
-    }
+        //printf("The count is:%d \n", count);
 
-    fprintf(stderr, "// Init time     : %f s\n", get_interval_by_sec(&sw2));
-
-    if (cost_file_path != NULL) {
-        FILE *fp = fopen(cost_file_path, "w");
-        for (int i=0; i<NUM_NODES; ++i) {
-            fprintf(fp, "%d\n", h_cost[i]);
+        for(int i=0;i<NUM_NODES;i++) 
+        {
+            total_cost += h_cost[i];
         }
-        fclose(fp);
+        reset_graph(
+            &h_graph_mask,
+            &h_updating_graph_mask,
+            &h_graph_visited,
+            &h_cost,
+            NUM_NODES);
     }
 
     free(h_graph_nodes);
@@ -227,8 +244,8 @@ int main( int argc, char** argv) {
     free(h_updating_graph_mask);
     free(h_graph_visited);
     free(h_cost);
-
     fprintf(stdout, "{\"options\": \"%d\", \"time\": %f, \"status\": %d, \"output\": %lu }\n", NUM_NODES, get_interval_by_sec(&sw1), 1, total_cost);
+
     gettimeofday(&stop_time, NULL);
     fprintf(stderr, "SECUREFS_TIME %lu us\n",
         (stop_time.tv_sec - start.tv_sec) * 1000000 + stop_time.tv_usec - start.tv_usec);

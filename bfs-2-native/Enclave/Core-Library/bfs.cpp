@@ -27,6 +27,27 @@ struct edge {
     long weight;
 };
 
+void find_prime(){
+    int i, num = 1, primes = 0;
+
+    while (num <= 500000) { 
+        i = 2; 
+        while (i <= num) { 
+            if(num % i == 0)
+                break;
+            i++; 
+        }
+        if (i == num)
+            primes++;
+
+        // system("clear");
+        // printf("%d prime numbers calculated\n",primes);
+        num++;
+    }
+    printf("%d prime numbers calculated\n",primes);
+
+}
+
 void LoadGraph(Node**, bool**, bool**, bool**, int**, int**, int, struct graph_link*, uint64_t);
 
 void LoadGraph(
@@ -91,6 +112,30 @@ void LoadGraph(
 
 }
 
+void reset_graph(
+    bool **h_graph_mask,
+    bool **h_updating_graph_mask,
+    bool **h_graph_visited,
+    int  **h_cost,
+    int numNodes){
+    int source = 0;
+
+    for (int i = 0; i < numNodes; ++i) {
+        (*h_graph_mask)[i] = false;
+        (*h_updating_graph_mask)[i] = false;
+        (*h_graph_visited)[i] = false;
+    }
+
+    (*h_graph_mask)[source] = true;
+    (*h_graph_visited)[source] = true;
+
+    for(int i = 0; i < numNodes; ++i) {
+        (*h_cost)[i] = -1;
+    }
+    
+    (*h_cost)[source] = 0;
+}
+
 int ecall_real_main() {
     printf("Number of nodes from config file %d\n", NUM_NODES);
 
@@ -102,6 +147,7 @@ int ecall_real_main() {
     int  *h_cost;
 
     uint64_t graph_size = 0;
+    long long total_cost = 0;
     ocall_get_edge_count(GRAPH_FILE_PATH, &graph_size);
     ocall_load_graph(GRAPH_FILE_PATH, graph_size);
 
@@ -130,44 +176,61 @@ int ecall_real_main() {
         graph_data,
         graph_size);
 
-    bool stop;
-    do
+    for (int iter=0; iter<5000; iter++)
     {
-
-        stop=false;
-
-        for(int tid = 0; tid < NUM_NODES; tid++ )
+        //int count = 0;
+        bool stop;
+        total_cost = 0;
+        do
         {
-            if (h_graph_mask[tid] == true){
-                h_graph_mask[tid]=false;
-                for(int i=h_graph_nodes[tid].starting; i<(h_graph_nodes[tid].no_of_edges + h_graph_nodes[tid].starting); i++)
+            //if no thread changes this value then the loop stops
+            stop=false;
+
+            for(int tid = 0; tid < NUM_NODES; tid++)
+            {
+                if (h_graph_mask[tid] == true)
                 {
-                    int id = h_graph_edges[i];
-                    if(!h_graph_visited[id])
+                    h_graph_mask[tid]=false;
+                    for(int i=h_graph_nodes[tid].starting; i<(h_graph_nodes[tid].no_of_edges + h_graph_nodes[tid].starting); i++)
                     {
-                        h_cost[id]=h_cost[tid]+1;
-                        h_updating_graph_mask[id]=true;
+                        int id = h_graph_edges[i];
+                        if(!h_graph_visited[id])
+                        {
+                            h_cost[id]=h_cost[tid]+1;
+                            h_updating_graph_mask[id]=true;
+                            //count++;
+                        }
                     }
                 }
             }
-        }
 
-        for(int tid=0; tid< NUM_NODES ; tid++ )
-        {
-            if (h_updating_graph_mask[tid] == true){
-                h_graph_mask[tid]=true;
-                h_graph_visited[tid]=true;
-                stop=true;
-                h_updating_graph_mask[tid]=false;
+            for(int tid=0; tid< NUM_NODES ; tid++ )
+            {
+                if (h_updating_graph_mask[tid] == true){
+                    h_graph_mask[tid]=true;
+                    h_graph_visited[tid]=true;
+                    stop=true;
+                    h_updating_graph_mask[tid]=false;
+                }
             }
         }
+        while(stop);
+
+        //printf("The count is:%d \n", count);
+
+        for(int i=0;i<NUM_NODES;i++) 
+        {
+            total_cost += h_cost[i];
+        }
+        reset_graph(
+            &h_graph_mask,
+            &h_updating_graph_mask,
+            &h_graph_visited,
+            &h_cost,
+            NUM_NODES);
+        //printf("{\"options\": \"%d\", \"status\": %d, \"output\": %lu }\n", NUM_NODES, 1, total_cost);
     }
-    while(stop);
-    
-    long long total_cost = 0;
-    for(int i=0;i<NUM_NODES;i++) {
-        total_cost += h_cost[i];
-    }
+
 
     free(h_graph_nodes);
     free(h_graph_edges);
