@@ -1,3 +1,4 @@
+libsvm/
 *.o
 svm-scale
 svm-predict

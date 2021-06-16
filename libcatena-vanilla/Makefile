@@ -12,7 +12,7 @@ src/catena/Block.cpp \
 src/catena/BlockChain.cpp
 SRCS=src/Main.cpp $(TPSRCS) $(LIBSRCS)
 
-all: build catena.manifest.sgx pcatena.manifest.sgx
+all: build catena.manifest.sgx
 
 build:
 	$(CC) -o $(EXENAME) $(SRCS) $(CXXFLAGS) $(LDFLAGS)
@@ -21,9 +21,9 @@ catena.manifest.sgx : catena.manifest
 	@echo "Building catena"
 	./build_manifest_andsign.sh catena
 
-pcatena.manifest.sgx : pcatena.manifest
-	@echo "Building pcatena"
-	./build_manifest_andsign.sh pcatena
+# pcatena.manifest.sgx : pcatena.manifest
+# 	@echo "Building pcatena"
+# 	./build_manifest_andsign.sh pcatena
 
 clean:
 	rm -rf $(EXENAME) *.sig *.manifest.sgx

@@ -29,9 +29,9 @@ hashjoin.manifest.sgx : hashjoin.manifest bin/bench_hashjoin_st
 	@echo "Building hashjoin"
 	./build_manifest_andsign.sh hashjoin
 
-phashjoin.manifest.sgx : phashjoin.manifest bin/bench_hashjoin_st
-	@echo "Building phashjoin"
-	./build_manifest_andsign.sh phashjoin
+# phashjoin.manifest.sgx : phashjoin.manifest bin/bench_hashjoin_st
+# 	@echo "Building phashjoin"
+# 	./build_manifest_andsign.sh phashjoin
 
 clean:
 	rm -rf bin/* hashjoin.manifest.sgx phashjoin.manifest.sgx
