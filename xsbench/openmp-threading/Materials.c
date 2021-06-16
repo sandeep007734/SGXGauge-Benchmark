@@ -10,10 +10,10 @@ int * load_num_nucs(long n_isotopes)
 	
 	// Material 0 is a special case (fuel). The H-M small reactor uses
 	// 34 nuclides, while H-M larges uses 300.
-	if( n_isotopes == 68 )
-		num_nucs[0]  = 34; // HM Small is 34, H-M Large is 321
+	if( n_isotopes == SGXGAUGE_SMALL )
+		num_nucs[0]  = (SGXGAUGE_SMALL)/2; // HM Small is 34, H-M Large is 321
 	else
-		num_nucs[0]  = 321; // HM Small is 34, H-M Large is 321
+		num_nucs[0]  = (SGXGAUGE_HIGH)/2; // HM Small is 34, H-M Large is 321
 
 	num_nucs[1]  = 5;
 	num_nucs[2]  = 4;
@@ -51,7 +51,7 @@ int * load_mats( int * num_nucs, long n_isotopes, int * max_num_nucs )
 	                 8, 9, 10, 29, 57, 47, 48, 0, 62, 15, 33, 34, 52, 53,
 	                 54, 55, 56, 18, 23, 41 }; //fuel
 	for( int i = 0; i < 321-34; i++ )
-		mats0_Lrg[34+i] = 68 + i; // H-M large adds nuclides to fuel only
+		mats0_Lrg[34+i] = SGXGAUGE_SMALL + i; // H-M large adds nuclides to fuel only
 	
 	// These are the non-fuel materials	
 	int mats1[] =  { 63, 64, 65, 66, 67 }; // cladding
@@ -74,7 +74,7 @@ int * load_mats( int * num_nucs, long n_isotopes, int * max_num_nucs )
 	int mats11[] = { 24, 41, 4, 5, 63, 64, 65, 66, 67 }; // bottom FA's
 	
 	// H-M large v small dependency
-	if( n_isotopes == 68 )
+	if( n_isotopes == SGXGAUGE_SMALL )
 		memcpy( mats,  mats0_Sml,  num_nucs[0]  * sizeof(int) );	
 	else
 		memcpy( mats,  mats0_Lrg,  num_nucs[0]  * sizeof(int) );

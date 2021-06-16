@@ -37,7 +37,7 @@ CC    = gcc
 endif
 
 # Standard Flags
-CFLAGS := -std=gnu99 -Wall
+CFLAGS := -std=gnu99 -Wall -g
 
 # Linker Flags
 LDFLAGS = -lm

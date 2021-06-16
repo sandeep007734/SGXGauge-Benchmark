@@ -333,6 +333,7 @@ void calculate_macro_xs( double p_energy, int mat, long n_isotopes,
 	//  avoid simulataneous writing to the same data structure)
 	for( int j = 0; j < num_nucs[mat]; j++ )
 	{
+		// printf("j %d\n",j);
 		double xs_vector[5];
 		p_nuc = mats[mat*max_num_nucs + j];
 		conc = concs[mat*max_num_nucs + j];

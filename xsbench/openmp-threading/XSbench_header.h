@@ -45,6 +45,10 @@ typedef struct{
 	double nu_fission_xs;
 } NuclideGridPoint;
 
+#define SGXGAUGE_SMALL 68
+#define SGXGAUGE_MEDIUM 68
+#define SGXGAUGE_HIGH 355
+
 typedef struct{
 	int nthreads;
 	long n_isotopes;

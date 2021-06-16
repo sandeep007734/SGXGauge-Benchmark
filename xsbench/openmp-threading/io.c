@@ -439,7 +439,7 @@ Inputs read_CLI( int argc, char * argv[] )
 	// Set HM size specific parameters
 	// (defaults to large)
 	if( strcasecmp(input.HM, "small") == 0 )
-		input.n_isotopes = 68;
+		input.n_isotopes = SGXGAUGE_SMALL;
 	else if( strcasecmp(input.HM, "XL") == 0 && user_g == 0 )
 		input.n_gridpoints = 238847; // sized to make 120 GB XS data
 	else if( strcasecmp(input.HM, "XXL") == 0 && user_g == 0 )
