@@ -35,8 +35,8 @@ fi
 
 
 BENCH="lighttpd"
-BENCHHOME="/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/lighttpd"
-EXP_NAME="sgxgauge_${WORKLOAD_TYPE}"
+BENCHHOME=$(pwd)
+EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 
 
 BENCH_ARGS=" -D -m ./install/lib -f lighttpd.conf"
@@ -80,6 +80,7 @@ TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
 MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/perflog-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+echo $MAIN_DIR
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
 
@@ -122,6 +123,7 @@ echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1; 
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
 echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
+echo ${BENCHHOME}/runme.sh
 
 echo "**************************"
 echo "*********WAITING**********"
@@ -132,6 +134,8 @@ while [ ! -f  ${TMP_FILE} ]; do
 done  
 
 # exit 1
+
+
 
 
 while [ -z "$BENCHMARK_PID" ]; do
@@ -150,6 +154,9 @@ while [ -z "$BENCHMARK_PID" ]; do
         echo "-------------------------------------------------------------"
 done
 
+PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
+echo "Main PERF PID is ${PERF_PID}"
+
 SECONDS=0
 
 # ======================================================================================
@@ -164,6 +171,7 @@ SLEEP_DURATION=2
 # sleep 2
 
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
+
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &
 ${TREND_DIR}/graph_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.status $SLEEP_DURATION &
@@ -182,15 +190,13 @@ sleep 14
 # ============================ WAITING =================================================
 # ======================================================================================
 
-kill $BENCHMARK_PID 2>/dev/null
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
+kill -INT $BENCHMARK_PID 2>/dev/null
 
 # while  ps -p $BENCHMARK_PID > /dev/null 2>&1; do
 #     sleep 0.1
 # done
-
-
-# kill -INT $PERF_PID &>/dev/null
-
 
 
 DURATION=$SECONDS

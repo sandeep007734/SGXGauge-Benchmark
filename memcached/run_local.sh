@@ -18,13 +18,26 @@ fi
 # ======================================================================================
 
 
+EXEC_TYPE=$1
+WORKLOAD_TYPE=$2
+user=$(who|awk '{print $1}')
+
+if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
+    STRESS_ARGS=" scripts/workload_low"
+elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
+    STRESS_ARGS=" scripts/workload_medium"
+elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
+    STRESS_ARGS=" scripts/workload_high"
+else
+    echo "ERROR"
+    exit 1
+fi
 
 EXEC_TYPE=$1
 
 BENCH="memcached"
-#BENCHHOME="/home/sandeep/Desktop/work/phd/SecureFS/graphene_master/Examples/memcached"
-BENCHHOME="/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/memcached"
-EXP_NAME="graphene_2"
+BENCHHOME=$(pwd)
+EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 
 BENCH_ARGS=" -u nobody  -m 200m "
 if [ $EXEC_TYPE -eq 1 ];then
@@ -93,13 +106,17 @@ fi
 rm ${TMP_FILE}
 rm ${QUIT_FILE}
 
-# Restting the SGX counters
-${TREND_DIR}/test_ioctl.o 1
-${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o 1
+    ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
+    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
+else
+    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
+    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
+fi
 
-# PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
-PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
-# echo "$PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD "
+
 echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
@@ -134,6 +151,9 @@ while [ -z "$BENCHMARK_PID" ]; do
         echo "-------------------------------------------------------------"
 done
 
+PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
+echo "Main PERF PID is ${PERF_PID}"
+
 SECONDS=0
 DURATION=$SECONDS
 SECONDS=0
@@ -149,7 +169,7 @@ SLEEP_DURATION=2
 
 # sleep 2
 
-echo $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID
+# echo $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &
@@ -164,30 +184,39 @@ YSCSB_HOME="/home/sandeep/Desktop/work/phd/SecureFS/YCSB"
 echo "Wating for the server to be up."
 sleep 14
 # Load the data
-${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${YSCSB_HOME}/workloads/workloadcustom   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
+${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
 
 # Run
-${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${YSCSB_HOME}/workloads/workloadcustom   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
+${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
 
 # ======================================================================================
 # ============================ WAITING =================================================
 # ======================================================================================
 
-# wait $WBENCHMARK_PID 2>/dev/null
-# kill -INT $PERF_PID &>/dev/null
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
+kill -INT $BENCHMARK_PID &>/dev/null
 
-${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+# wait $WBENCHMARK_PID 2>/dev/null
+
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
-kill ${BENCHMARK_PID}
-sleep 2
+cat ${STRESS_ARGS} >> $LOGFILE
+
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+    sudo chown -R sandeep:sandeep -- *
+else
+    sudo chown -R abhishek:abhishek -- *
+fi
 
 echo "Cleaning"
-sudo chown -R sandeep:sandeep -- *
 
 touch ${QUIT_FILE}
-# kill INT  ${WBENCHMARK_PID}
+
+ps -aux | grep mem_stats.sh |  grep -v 'color'
+
 for pid in $(ps -aux | grep mem_stats.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
 for pid in $(ps -aux | grep graph_stats.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
 for pid in $(ps -aux | grep capture.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
