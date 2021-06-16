@@ -18,12 +18,26 @@ fi
 # ======================================================================================
 
 
-
 EXEC_TYPE=$1
+WORKLOAD_TYPE=$2
+user=$(who|awk '{print $1}')
+
+if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
+    STRESS_ARGS="10000"
+elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
+    STRESS_ARGS="20000"
+elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
+    STRESS_ARGS="300000"
+else
+    echo "ERROR"
+    exit 1
+fi
+
 
 BENCH="lighttpd"
 BENCHHOME="/home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/lighttpd"
-EXP_NAME="sgxgauge"
+EXP_NAME="sgxgauge_${WORKLOAD_TYPE}"
+
 
 BENCH_ARGS=" -D -m ./install/lib -f lighttpd.conf"
 if [ $EXEC_TYPE -eq 1 ];then
@@ -137,8 +151,6 @@ while [ -z "$BENCHMARK_PID" ]; do
 done
 
 SECONDS=0
-DURATION=$SECONDS
-SECONDS=0
 
 # ======================================================================================
 # ============================ CONT SETUP===============================================
@@ -151,7 +163,6 @@ SLEEP_DURATION=2
 
 # sleep 2
 
-echo $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &
@@ -161,32 +172,43 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 # ======================================================================================
 # ============================ YCSB =================================================
 # ======================================================================================
-YSCSB_HOME="/home/sandeep/Desktop/work/phd/SecureFS/YCSB"
 # Wait for the server to come up
 echo "Wating for the server to be up."
 sleep 14
 # Run the benchmarks
-./benchmark-http.sh 127.0.0.1:8003 2>&1 | tee ${RUNFILE}
+./benchmark-http.sh 127.0.0.1:8003 ${STRESS_ARGS} 2>&1 | tee ${RUNFILE}
 
 # ======================================================================================
 # ============================ WAITING =================================================
 # ======================================================================================
 
-# wait $WBENCHMARK_PID 2>/dev/null
+kill $BENCHMARK_PID 2>/dev/null
+
+# while  ps -p $BENCHMARK_PID > /dev/null 2>&1; do
+#     sleep 0.1
+# done
+
+
 # kill -INT $PERF_PID &>/dev/null
 
-${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
-kill ${BENCHMARK_PID}
-sleep 2
+
+if [ "$user" = "sandeep" ]; then
+    ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
+    sudo chown -R sandeep:sandeep -- *
+else
+    sudo chown -R abhishek:abhishek -- *
+fi
 
 echo "Cleaning"
-sudo chown -R sandeep:sandeep -- *
 
 touch ${QUIT_FILE}
-# kill INT  ${WBENCHMARK_PID}
+
+ps -aux | grep mem_stats.sh |  grep -v 'color'
+
 for pid in $(ps -aux | grep mem_stats.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
 for pid in $(ps -aux | grep graph_stats.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
 for pid in $(ps -aux | grep capture.sh |  grep -v 'color' | awk '{print $2}'); do kill -9 $pid; done
