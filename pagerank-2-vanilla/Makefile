@@ -28,7 +28,7 @@ bin/pagerank: $(SRC_S) $(DEPS)
 bin/page_gen: $(SRC_G) $(DEPS)
 	$(CC) $(INCLUDES) $(CFLAGS) $(SRC_G) -o $@  $(COMMON_LIBS)
 
-pagerank.manifest.sgx : pagerank.manifest
+pagerank.manifest.sgx : pagerank.manifest bin/pagerank
 	@echo "Building pagerank"
 	./build_manifest_andsign.sh pagerank
 

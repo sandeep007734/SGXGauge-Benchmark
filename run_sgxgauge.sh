@@ -11,8 +11,8 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-# declare -a suite=("bfs-2" "libcatena" "openssl" "pagerank-2" "pte-hashjoin" "pte-btree" "svm")
-declare -a suite=("svm")
+declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree" "xsbench")
+# declare -a suite=("xsbench")
 workload_type=$1
 user=$(who|awk '{print $1}')
 CURR_DIR=$(pwd)
@@ -37,7 +37,7 @@ do
     sudo -H -E ./run_local.sh 1 ${workload_type}
     cd ${CURR_DIR}
 
-    if [ "$benchmark" != "svm" ]; then
+    if [ "$benchmark" != "svm" ] && [ "$benchmark" != "xsbench" ]; then
         cd ${benchmark}-native
         sudo rm -rf evaluation
         make clean

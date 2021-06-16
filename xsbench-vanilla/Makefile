@@ -1,4 +1,4 @@
-all: xsbench.manifest.sgx pxsbench.manifest.sgx
+all: xsbench.manifest.sgx 
 
 xsbench.manifest.sgx : xsbench.manifest
 	@echo "Building xsbench"

@@ -11,43 +11,52 @@ if [ $# -eq 0 ];then
 fi
 
 
+
+
+# ======================================================================================
+# ============================ PARSING ARGS===============================================
+# ======================================================================================
+
+
 EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
+
 user=$(who|awk '{print $1}')
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    BENCH_ARGS=" -g 150 -l 200"
+    STRESS_ARGS=" scripts/workload_low"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS=" -g 250 -l 200"
+    STRESS_ARGS=" scripts/workload_medium"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    BENCH_ARGS=" -s small -l 200"
+    STRESS_ARGS=" scripts/workload_high"
 else
     echo "ERROR"
     exit 1
 fi
 
-BENCH="xsbench"
-EXP_NAME="sgxgauge"
 
+BENCH="memcached"
+BENCHHOME=$(pwd)
+EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
+
+BENCH_ARGS=" -u nobody  -m 200m "
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="xsbench"
-    make xsbench.manifest.sgx
-    CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS} "
+    MANIFEST_FILE="memcached"
+    make ${MANIFEST_FILE}.manifest.sgx
+    CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
-    MANIFEST_FILE="pxsbench"
-    make pxsbench.manifest.sgx
+    MANIFEST_FILE="pmemcached"
+    make ${MANIFEST_FILE}.manifest.sgx
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./openmp-threading/XSBench ${BENCH_ARGS}"
-
+    CMD="./memcached ${BENCH_ARGS} "
 else
-    echo "ERROR"
+    echo "ERROR. Unknown mode. Supported are 1 2 and 3"
     exit 1
 fi
-
 
 
 if [ -e ./prepare_graphene.sh ];then
@@ -60,16 +69,21 @@ fi
 # ============================ SETTING UP===============================================
 # ======================================================================================
 
+
+
 TMP_FILE="/tmp/alloctest-bench.ready"
 QUIT_FILE="/tmp/alloctest-bench.quit"
 TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
-MAIN_DIR="evaluation/${EXP_NAME}/${BENCH}/graphene-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/perflog-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
+
 OUTFILE=${MAIN_DIR}"/perflog-"$PREFIX"-log.dat"
 LOGFILE=${MAIN_DIR}"/perflog-"$PREFIX"-securefsartifactlog"
+LOADFILE=${MAIN_DIR}"/perflog-"$PREFIX"-ycsbloadlog"
+RUNFILE=${MAIN_DIR}"/perflog-"$PREFIX"-ycsbrunlog"
 SGXFILE=${MAIN_DIR}"/perflog-"$PREFIX"-sgxlog"
 
 # RUNDIR="."
@@ -102,7 +116,23 @@ else
     CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
 fi
 
-$PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
+
+echo ""
+echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
+echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
+echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
+echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
+chmod +x ${BENCHHOME}/runme.sh
+
+echo "**************************"
+echo "*********WAITING**********"
+echo "**************************"
+
+while [ ! -f  ${TMP_FILE} ]; do
+    sleep 0.1
+done  
+
+# exit 1
 
 
 while [ -z "$BENCHMARK_PID" ]; do
@@ -114,14 +144,15 @@ while [ -z "$BENCHMARK_PID" ]; do
             BENCHMARK_PID=$(ps aux|grep "graphene/sgx/libpal.so"|grep sgx|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         else
             
-            
-            ps aux|grep ./openmp-threading/XSBench|grep -v color|grep -v perf|grep -v "grep"
-            ps aux|grep ./openmp-threading/XSBench|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
-            BENCHMARK_PID=$(ps aux|grep ./openmp-threading/XSBench|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            # NON SGX HERE
+            BENCHMARK_PID=$(ps aux|grep memcached|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         fi
         echo "Benchmark PID is "$BENCHMARK_PID
         echo "-------------------------------------------------------------"
 done
+
+PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
+echo "Main PERF PID is ${PERF_PID}"
 
 SECONDS=0
 DURATION=$SECONDS
@@ -138,7 +169,7 @@ SLEEP_DURATION=2
 
 # sleep 2
 
-sync; echo 3 > /proc/sys/vm/drop_caches
+# echo $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &
@@ -146,19 +177,32 @@ ${TREND_DIR}/graph_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.status $SLEEP_DURATION
 ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 
 # ======================================================================================
+# ============================ YCSB =================================================
+# ======================================================================================
+YSCSB_HOME="/home/sandeep/Desktop/work/phd/SecureFS/YCSB"
+# Wait for the server to come up
+echo "Wating for the server to be up."
+sleep 14
+# Load the data
+${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
+
+# Run
+${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
+
+# ======================================================================================
 # ============================ WAITING =================================================
 # ======================================================================================
-while  ps -p $BENCHMARK_PID > /dev/null 2>&1; do
-    sleep 0.1
-done
 
-wait $BENCHMARK_PID 2>/dev/null
-# kill -INT $PERF_PID &>/dev/null
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
+kill -INT $BENCHMARK_PID &>/dev/null
 
+# wait $WBENCHMARK_PID 2>/dev/null
 
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
+cat ${STRESS_ARGS} >> $LOGFILE
 
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}

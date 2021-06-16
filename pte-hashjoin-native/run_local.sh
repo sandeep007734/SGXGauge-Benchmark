@@ -11,10 +11,10 @@ if [ $# -eq 0 ];then
 fi
 
 EXEC_TYPE=$1
-
+WORKLOAD_TYPE=$2
 
 BENCH="hashjoin"
-EXP_NAME="sgxgauge"
+EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 BENCH_ARGS=" "
 user=$(who|awk '{print $1}')
 

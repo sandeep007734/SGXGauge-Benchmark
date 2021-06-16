@@ -15,7 +15,7 @@ WORKLOAD_TYPE=$2
 
 
 BENCH="lmbench_lat_syscall"
-EXP_NAME="sgxgauge"
+EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 user=$(who|awk '{print $1}')
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then

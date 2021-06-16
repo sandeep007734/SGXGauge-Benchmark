@@ -23,36 +23,39 @@ WORKLOAD_TYPE=$2
 user=$(who|awk '{print $1}')
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    STRESS_ARGS=" scripts/workload_low"
+    STRESS_ARGS="10000"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    STRESS_ARGS=" scripts/workload_medium"
+    STRESS_ARGS="20000"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    STRESS_ARGS=" scripts/workload_high"
+    STRESS_ARGS="300000"
 else
     echo "ERROR"
     exit 1
 fi
 
-EXEC_TYPE=$1
 
-BENCH="memcached"
+BENCH="lighttpd"
 BENCHHOME=$(pwd)
 EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 
-BENCH_ARGS=" -u nobody  -m 200m "
+
+BENCH_ARGS=" -D -m ./install/lib -f lighttpd.conf"
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="memcached"
+    MANIFEST_FILE="lighttpd"
     make ${MANIFEST_FILE}.manifest.sgx
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
-    MANIFEST_FILE="pmemcached"
+    MANIFEST_FILE="lighttpd"
     make ${MANIFEST_FILE}.manifest.sgx
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
+    echo "Error not supported"
+    exit 1
+
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./memcached ${BENCH_ARGS} "
+    CMD="./install/sbin/lighttpd ${BENCH_ARGS} "
 else
     echo "ERROR. Unknown mode. Supported are 1 2 and 3"
     exit 1
@@ -77,13 +80,14 @@ TREND_DIR="../scripts"
 PERF="/usr/bin/perf"
 
 MAIN_DIR="$(pwd)/evaluation/${EXP_NAME}/${BENCH}/perflog-"$PREFIX"-"$(date +"%Y%m%d-%H%M%S")
+echo $MAIN_DIR
 mkdir -p $MAIN_DIR
 PRE_OUTFILE=${MAIN_DIR}"/perflog"
 
 OUTFILE=${MAIN_DIR}"/perflog-"$PREFIX"-log.dat"
 LOGFILE=${MAIN_DIR}"/perflog-"$PREFIX"-securefsartifactlog"
-LOADFILE=${MAIN_DIR}"/perflog-"$PREFIX"-ycsbloadlog"
-RUNFILE=${MAIN_DIR}"/perflog-"$PREFIX"-ycsbrunlog"
+LOADFILE=${MAIN_DIR}"/perflog-"$PREFIX"-loadlog"
+RUNFILE=${MAIN_DIR}"/perflog-"$PREFIX"-runlog"
 SGXFILE=${MAIN_DIR}"/perflog-"$PREFIX"-sgxlog"
 
 # RUNDIR="."
@@ -106,33 +110,34 @@ fi
 rm ${TMP_FILE}
 rm ${QUIT_FILE}
 
-if [ "$user" = "sandeep" ]; then
-    ${TREND_DIR}/test_ioctl.o 1
-    ${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
-    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt)
-else
-    PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
-    CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
-fi
+# Restting the SGX counters
+${TREND_DIR}/test_ioctl.o 1
+${TREND_DIR}/test_ioctl.o  &> ${SGXFILE}
 
-
+# PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt-less)
+PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
+# echo "$PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD "
 echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
 echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
+echo ${BENCHHOME}/runme.sh
 
 echo "**************************"
 echo "*********WAITING**********"
 echo "**************************"
+
+# xterm ${BENCHHOME}/runme.sh 
 
 while [ ! -f  ${TMP_FILE} ]; do
     sleep 0.1
 done  
 
 # exit 1
+
+
 
 
 while [ -z "$BENCHMARK_PID" ]; do
@@ -145,7 +150,8 @@ while [ -z "$BENCHMARK_PID" ]; do
         else
             
             # NON SGX HERE
-            BENCHMARK_PID=$(ps aux|grep memcached|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            ps aux|grep lighttpd|grep -v color|grep -v perf|grep -v "grep"
+            BENCHMARK_PID=$(ps aux|grep lighttpd|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         fi
         echo "Benchmark PID is "$BENCHMARK_PID
         echo "-------------------------------------------------------------"
@@ -154,8 +160,6 @@ done
 PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
 echo "Main PERF PID is ${PERF_PID}"
 
-SECONDS=0
-DURATION=$SECONDS
 SECONDS=0
 
 # ======================================================================================
@@ -169,8 +173,8 @@ SLEEP_DURATION=2
 
 # sleep 2
 
-# echo $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
+
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &
 ${TREND_DIR}/graph_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.status $SLEEP_DURATION &
@@ -179,15 +183,11 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 # ======================================================================================
 # ============================ YCSB =================================================
 # ======================================================================================
-YSCSB_HOME="/home/sandeep/Desktop/work/phd/SecureFS/YCSB"
 # Wait for the server to come up
 echo "Wating for the server to be up."
 sleep 14
-# Load the data
-${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
-
-# Run
-${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
+# Run the benchmarks
+./benchmark-http.sh 127.0.0.1:8003 ${STRESS_ARGS} 2>&1 | tee ${RUNFILE}
 
 # ======================================================================================
 # ============================ WAITING =================================================
@@ -195,14 +195,15 @@ ${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hos
 
 kill -INT $PERF_PID &>/dev/null
 wait $PERF_PID
-kill -INT $BENCHMARK_PID &>/dev/null
+kill -INT $BENCHMARK_PID 2>/dev/null
 
-# wait $WBENCHMARK_PID 2>/dev/null
+# while  ps -p $BENCHMARK_PID > /dev/null 2>&1; do
+#     sleep 0.1
+# done
 
 
 DURATION=$SECONDS
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
-cat ${STRESS_ARGS} >> $LOGFILE
 
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}
