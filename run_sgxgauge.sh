@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#!/bin/bash
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
+
+if [ $# -ne 1 ]; then
+    echo "Need a workload type. LOW | MEDIUM | HIGH"
+    exit 1
+fi
+
 declare -a suite=("bfs-2" "libcatena" "openssl" "pagerank-2" "pte-hashjoin" "pte-btree" "svm")
 workload_type=$1
 
