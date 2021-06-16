@@ -19,11 +19,11 @@ BENCH_ARGS=""
 user=$(who|awk '{print $1}')
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    BENCH_ARGS="usps.te usps.tr.model output"
+    BENCH_ARGS="-q aloi.tr_low"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS="news20.te news20.tr.model output"
+    BENCH_ARGS="-q aloi.tr_medium"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    BENCH_ARGS="aloi.te1 aloi.tr.model output"
+    BENCH_ARGS="-q aloi.tr_high"
 else
     echo "ERROR"
     exit 1
@@ -41,7 +41,7 @@ elif [ $EXEC_TYPE -eq 2 ];then
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then
     PREFIX="NOSGX-VANILLA-${BENCH}"
-    CMD="./svm-predict ${BENCH_ARGS}"
+    CMD="./svm-train ${BENCH_ARGS}"
 elif [ $EXEC_TYPE -eq 4 ];then
     PREFIX="SGX-NATIVE-${BENCH}"
     CMD="./app -u nobody ${BENCH_ARGS}"
@@ -117,9 +117,9 @@ while [ -z "$BENCHMARK_PID" ]; do
             BENCHMARK_PID=$(ps aux|grep "graphene/sgx/libpal.so"|grep sgx|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
         elif [ $EXEC_TYPE -eq 3 ];then
         
-            ps aux|grep ./svm-predict|grep -v color|grep -v perf|grep -v "grep"
-            ps aux|grep ./svm-predict|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
-            BENCHMARK_PID=$(ps aux|grep ./svm-predict|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
+            ps aux|grep ./svm-train|grep -v color|grep -v perf|grep -v "grep"
+            ps aux|grep ./svm-train|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}'
+            BENCHMARK_PID=$(ps aux|grep ./svm-train|grep -v color|grep -v perf|grep -v "grep"|awk '{print $2}')
 
         elif [ $EXEC_TYPE -eq 4 ];then
             echo "========"
