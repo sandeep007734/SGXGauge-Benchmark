@@ -23,7 +23,7 @@ if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
     BENCH_ARGS="news20.te news20.tr.model output"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    BENCH_ARGS="-N 10000"
+    BENCH_ARGS="aloi.te1 aloi.tr.model output"
 else
     echo "ERROR"
     exit 1

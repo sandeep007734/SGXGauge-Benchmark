@@ -155,7 +155,12 @@ Enclave_Cpp_Objects := $(sort $(Enclave_Cpp_Files:.cpp=.o))
 
 Enclave_Name := enclave.so
 Signed_Enclave_Name := enclave.signed.so
-Enclave_Config_File := Enclave/Enclave.config.xml
+
+ifeq ($(WORKLOAD_TYPE), HIGH_)
+	Enclave_Config_File := Enclave/Enclave.config_high.xml
+else
+	Enclave_Config_File := Enclave/Enclave.config.xml
+endif
 
 ifeq ($(SGX_MODE), HW)
 ifeq ($(SGX_DEBUG), 1)
