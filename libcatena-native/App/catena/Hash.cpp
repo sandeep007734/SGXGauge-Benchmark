@@ -25,7 +25,9 @@
 namespace catena {
 const std::string Hash::kBlankHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 const std::string Hash::kAllZeroesHash(64, '0');
+long long Hash::ecalls_count = 0;
 std::string Hash::sha256(const std::string& input) {
+  ecalls_count++;
   if (input.empty()) { return kBlankHash; }
   unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) * 33);
   memset( output, '0', sizeof(unsigned char)*33);

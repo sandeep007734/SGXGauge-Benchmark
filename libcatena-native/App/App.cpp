@@ -278,6 +278,7 @@ public:
     }
     std::cout << "... final blockchain ..." << std::endl;
     blockChain.dump(std::cout);
+    std::cout << "SECUREFS_ECALLS " << Hash::ecalls_count <<std::endl;
     return blockChain;
   }
 

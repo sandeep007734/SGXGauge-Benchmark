@@ -24,6 +24,7 @@ class Hash {
 public:
   static const std::string kBlankHash;
   static const std::string kAllZeroesHash;
+  static long long ecalls_count;
   static std::string sha256(const std::string& input);
   static std::string merkle1(const std::string& s);
   static std::string merkle2(const std::string& s1, const std::string& s2);
