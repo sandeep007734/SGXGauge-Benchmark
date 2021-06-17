@@ -2,6 +2,8 @@ libos.entrypoint = "file:bin/bfs"
 
 sgx.allowed_files.catena = "file:bin/bfs"
 sgx.allowed_files.one = "file:vertex_medium.dat"
+sgx.allowed_files.two = "file:vertex_low.dat"
+sgx.allowed_files.three = "file:vertex_high.dat"
 
 
 # =========================================

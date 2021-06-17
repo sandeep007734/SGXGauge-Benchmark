@@ -2,6 +2,8 @@ libos.entrypoint = "file:bin/pagerank"
 
 sgx.allowed_files.catena = "file:bin/pagerank"
 sgx.allowed_files.one = "file:pages_medium.dat"
+sgx.allowed_files.two = "file:pages_low.dat"
+sgx.allowed_files.three = "file:pages_high.dat"
 
 
 # =========================================

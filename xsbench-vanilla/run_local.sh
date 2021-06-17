@@ -14,6 +14,8 @@ fi
 EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
 user=$(who|awk '{print $1}')
+make clean; 
+make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     BENCH_ARGS=" -g 150 -l 100"
@@ -59,6 +61,21 @@ fi
 # ======================================================================================
 # ============================ SETTING UP===============================================
 # ======================================================================================
+
+echo "Dropping caches"
+sync; echo 3 > /proc/sys/vm/drop_caches
+
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/enabled
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/defrag
+
+cat /sys/kernel/mm/transparent_hugepage/enabled 2>&1 | tee -a $OUTFILE
+cat /sys/kernel/mm/transparent_hugepage/defrag 2>&1 | tee -a $OUTFILE
+
+echo "Enable performance mode"
+sudo cpupower frequency-set --governor performance >/dev/null
+
+echo "Disabling address space randomization"
+sudo sysctl kernel.randomize_va_space=0	
 
 TMP_FILE="/tmp/alloctest-bench.ready"
 QUIT_FILE="/tmp/alloctest-bench.quit"
@@ -138,7 +155,7 @@ SLEEP_DURATION=2
 
 # sleep 2
 
-sync; echo 3 > /proc/sys/vm/drop_caches
+
 $PERF stat -I $PERF_TIMER -e $CONT_PERF_EVENTS -p $BENCHMARK_PID &>${PRE_OUTFILE}.perf &
 
 ${TREND_DIR}/mem_stats.sh $BENCHMARK_PID ${PRE_OUTFILE}.meminfo $SLEEP_DURATION  &

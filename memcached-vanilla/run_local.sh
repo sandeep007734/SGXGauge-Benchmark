@@ -22,6 +22,8 @@ EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
 
 user=$(who|awk '{print $1}')
+make clean; 
+make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     STRESS_ARGS=" scripts/workload_low"
@@ -68,6 +70,21 @@ fi
 # ======================================================================================
 # ============================ SETTING UP===============================================
 # ======================================================================================
+
+echo "Dropping caches"
+sync; echo 3 > /proc/sys/vm/drop_caches
+
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/enabled
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/defrag
+
+cat /sys/kernel/mm/transparent_hugepage/enabled 2>&1 | tee -a $OUTFILE
+cat /sys/kernel/mm/transparent_hugepage/defrag 2>&1 | tee -a $OUTFILE
+
+echo "Enable performance mode"
+sudo cpupower frequency-set --governor performance >/dev/null
+
+echo "Disabling address space randomization"
+sudo sysctl kernel.randomize_va_space=0	
 
 
 

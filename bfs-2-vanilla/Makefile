@@ -28,7 +28,7 @@ bin/bfs: $(SRC_S) $(DEPS)
 bin/graph_gen: $(SRC_G) $(DEPS)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) $(SRC_G) -o $@  $(COMMON_LIBS)
 
-bfs.manifest.sgx : bfs.manifest
+bfs.manifest.sgx : bfs.manifest bin/bfs vertex_medium.dat vertex_high.dat vertex_low.dat
 	@echo "Building bfs"
 	./build_manifest_andsign.sh bfs
 	

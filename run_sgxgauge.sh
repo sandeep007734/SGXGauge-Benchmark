@@ -15,6 +15,8 @@ declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree" "xsbe
 # declare -a suite=("xsbench")
 workload_type=$1
 user=$(who|awk '{print $1}')
+make clean; 
+make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 CURR_DIR=$(pwd)
 
 if [ "$user" == "sandeep" ]; then
@@ -31,8 +33,9 @@ for benchmark in "${suite[@]}";
 do
     cd ${benchmark}-vanilla
     sudo rm -rf evaluation
-    make clean
-    make WORKLOAD_TYPE=${workload_type}
+    # Moving clean step to run_local.sh
+    # make clean
+    # make WORKLOAD_TYPE=${WORKLOAD_TYPE}
     sudo -H -E ./run_local.sh 3 ${workload_type}
     sudo -H -E ./run_local.sh 1 ${workload_type}
     cd ${CURR_DIR}
@@ -40,8 +43,9 @@ do
     if [ "$benchmark" != "svm" ] && [ "$benchmark" != "xsbench" ]; then
         cd ${benchmark}-native
         sudo rm -rf evaluation
-        make clean
-        make WORKLOAD_TYPE=${workload_type}
+        # Moving clean step to run_local.sh
+        # make clean
+        # make WORKLOAD_TYPE=${WORKLOAD_TYPE}
         sudo -H -E ./run_local.sh 4 ${workload_type}
         cd ${CURR_DIR}
     fi

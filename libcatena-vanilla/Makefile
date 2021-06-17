@@ -1,6 +1,6 @@
 CC=g++
 WORKLOAD_TYPE = MEDIUM_
-CXXFLAGS=-Iinclude -Isrc -Ithird-party -std=c++1y -g -D${WORKLOAD_TYPE}
+CXXFLAGS=-Iinclude -Isrc -Ithird-party -std=c++1y -D${WORKLOAD_TYPE}
 LDFLAGS=-lpthread
 PROJNAME=catena
 EXENAME=bin/$(PROJNAME)

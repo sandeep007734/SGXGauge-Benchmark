@@ -17,6 +17,8 @@ BENCH="btree"
 EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 BENCH_ARGS=" "
 user=$(who|awk '{print $1}')
+make clean; 
+make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
@@ -50,6 +52,21 @@ TREND_DIR="../scripts"
 # ======================================================================================
 # ============================ SETTING UP===============================================
 # ======================================================================================
+
+echo "Dropping caches"
+sync; echo 3 > /proc/sys/vm/drop_caches
+
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/enabled
+echo never | sudo tee >/sys/kernel/mm/transparent_hugepage/defrag
+
+cat /sys/kernel/mm/transparent_hugepage/enabled 2>&1 | tee -a $OUTFILE
+cat /sys/kernel/mm/transparent_hugepage/defrag 2>&1 | tee -a $OUTFILE
+
+echo "Enable performance mode"
+sudo cpupower frequency-set --governor performance >/dev/null
+
+echo "Disabling address space randomization"
+sudo sysctl kernel.randomize_va_space=0	
 
 TMP_FILE="/tmp/alloctest-bench.ready"
 QUIT_FILE="/tmp/alloctest-bench.quit"

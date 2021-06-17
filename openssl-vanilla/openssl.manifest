@@ -2,6 +2,9 @@ libos.entrypoint = "file:encrypt"
 
 sgx.allowed_files.catena = "file:encrypt"
 sgx.allowed_files.one = "file:datax_medium.csv"
+sgx.allowed_files.onetwo = "file:datax_high.csv"
+sgx.allowed_files.onethree = "file:datax_low.csv"
+
 sgx.allowed_files.two = "file:datax_enc.csv"
 sgx.allowed_files.three = "file:datax_dec.csv"
 
