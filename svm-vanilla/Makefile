@@ -21,5 +21,10 @@ svm-scale: svm-scale.c
 	$(CXX) $(CFLAGS) svm-scale.c -o svm-scale
 svm.o: svm.cpp svm.h
 	$(CXX) $(CFLAGS) -c svm.cpp
+
+svm.manifest.sgx : svm.manifest svm-train
+	@echo "Building svm"
+	./build_manifest_andsign.sh svm
+
 clean:
 	rm -f *~ svm.o svm-train svm-predict svm-scale libsvm.so.$(SHVER)

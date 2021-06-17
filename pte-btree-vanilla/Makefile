@@ -17,7 +17,7 @@ SRC_S=src/main.c src/btree1.c
 DEPS=src/config.h
 
 # the targets
-all : bin/bench_btree_st btree.manifest.sgx pbtree.manifest.sgx
+all : bin/bench_btree_st
 
 ###############################################################################
 # btree

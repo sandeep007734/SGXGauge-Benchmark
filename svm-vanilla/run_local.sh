@@ -18,7 +18,7 @@ EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 BENCH_ARGS=""
 user=$(who|awk '{print $1}')
 make clean; 
-make WORKLOAD_TYPE=${WORKLOAD_TYPE}
+make WORKLOAD_TYPE=${workload_type}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     BENCH_ARGS="-q aloi.tr_low"

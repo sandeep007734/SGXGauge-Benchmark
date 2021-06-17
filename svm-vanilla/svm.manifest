@@ -1,9 +1,9 @@
-libos.entrypoint = "file:svm-predict"
+libos.entrypoint = "file:svm-train"
 
-sgx.allowed_files.catena = "file:svm-predict"
-sgx.allowed_files.one = "file:news20.te"
-sgx.allowed_files.two = "file:news20.tr.model"
-sgx.allowed_files.three = "file:output"
+sgx.allowed_files.catena = "file:svm-train"
+sgx.allowed_files.one = "file:aloi.tr_low"
+sgx.allowed_files.two = "file:aloi.tr_medium"
+sgx.allowed_files.three = "file:aloi.tr_high"
 
   
 

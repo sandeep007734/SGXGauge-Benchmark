@@ -35,3 +35,4 @@ hashjoin.manifest.sgx : hashjoin.manifest bin/bench_hashjoin_st
 
 clean:
 	rm -rf bin/* hashjoin.manifest.sgx phashjoin.manifest.sgx
+	

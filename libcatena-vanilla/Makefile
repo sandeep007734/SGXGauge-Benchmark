@@ -12,7 +12,7 @@ src/catena/Block.cpp \
 src/catena/BlockChain.cpp
 SRCS=src/Main.cpp $(TPSRCS) $(LIBSRCS)
 
-all: build catena.manifest.sgx
+all: build
 
 build:
 	$(CC) -o $(EXENAME) $(SRCS) $(CXXFLAGS) $(LDFLAGS)
