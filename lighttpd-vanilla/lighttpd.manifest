@@ -15,6 +15,9 @@ loader.preload = "file:/usr/local/lib/x86_64-linux-gnu/graphene/libsysdb.so"
 # Graphene log level
 loader.log_level = "error"
 
+sgx.enable_stats = 1
+
+
 # Read application arguments directly from the command line. Don't use this on production!
 loader.insecure__use_cmdline_argv = 1
 
@@ -65,7 +68,7 @@ sgx.enclave_size = "256M"
 # thread for handling inter-process communication (IPC), and potentially another
 # thread for asynchronous events. Therefore, the actual number of threads that
 # the application can create is (sgx.thread_num - 2).
-sgx.thread_num = 3
+sgx.thread_num = 20
 
 sgx.nonpie_binary = 1
 
