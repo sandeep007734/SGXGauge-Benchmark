@@ -104,7 +104,7 @@ int real_main()
   
     fprintf(stderr,"Hashsize using the para s is %ld \n",hashsize);
 
-    fprintf(stderr,"Hashtable Size: %zuMB\n", (hashsize * sizeof(struct htelm *)) >> 20);
+    fprintf(stderr,"Hashtable Size: %zuKB\n", (hashsize * sizeof(struct htelm *)) >> 10);
     fprintf(stderr,"Datatable Size Size: %zuMB\n", (outersize * sizeof(struct element)) >> 20);
     fprintf(stderr,"Element Size: %zu MB\n", (hashsize * sizeof(struct htelm)) >> 20);
     fprintf(stderr,"Total: %zu MB\n", ((hashsize * sizeof(struct htelm *))

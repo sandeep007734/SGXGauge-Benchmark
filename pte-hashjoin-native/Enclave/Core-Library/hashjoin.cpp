@@ -81,7 +81,7 @@ int ecall_real_main()
 
     printf("Hashsize using the para s is %ld \n",hashsize);
 
-    printf("Hashtable Size: %zuMB\n", (hashsize * sizeof(struct htelm *)) >> 20);
+    printf("Hashtable Size: %zuKB\n", (hashsize * sizeof(struct htelm *)) >> 10);
     printf("Datatable Size Size: %zuMB\n", (outersize * sizeof(struct element)) >> 20);
     printf("Element Size: %zu MB\n", (hashsize * sizeof(struct htelm)) >> 20);
     printf("Total: %zu MB\n", ((hashsize * sizeof(struct htelm *))
