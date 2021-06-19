@@ -21,7 +21,9 @@ fi
 EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
 user=$(who|awk '{print $1}')
-make clean; 
+
+# Not required here
+# make clean; 
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
@@ -212,11 +214,12 @@ sleep 14
 
 kill -INT $PERF_PID &>/dev/null
 wait $PERF_PID
-kill -INT $BENCHMARK_PID 2>/dev/null
 
-# while  ps -p $BENCHMARK_PID > /dev/null 2>&1; do
-#     sleep 0.1
-# done
+echo "Waiting for the benchmark to end"
+killall loader
+wait $WBENCHMARK_PID 2>/dev/null
+echo "Waiting for the benchmark to end.. DONE"
+
 
 
 DURATION=$SECONDS

@@ -22,8 +22,10 @@ EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
 
 user=$(who|awk '{print $1}')
-make clean; 
-make WORKLOAD_TYPE=${WORKLOAD_TYPE}
+
+# Not required
+# make clean; 
+make WORKLOAD_TYPE=${WORKLOAD_TYPE} -j12
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     STRESS_ARGS=" scripts/workload_low"
@@ -45,7 +47,7 @@ BENCH_ARGS=" -u nobody  -m 200m "
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
     MANIFEST_FILE="memcached"
-    make ${MANIFEST_FILE}.manifest.sgx
+    make ${MANIFEST_FILE}.manifest.sgx -j12
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
@@ -171,9 +173,6 @@ done
 PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
 echo "Main PERF PID is ${PERF_PID}"
 
-SECONDS=0
-DURATION=$SECONDS
-SECONDS=0
 
 # ======================================================================================
 # ============================ CONT SETUP===============================================
@@ -203,6 +202,11 @@ sleep 14
 # Load the data
 ${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
 
+SECONDS=0
+DURATION=$SECONDS
+SECONDS=0
+
+
 # Run
 ${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
 
@@ -210,15 +214,20 @@ ${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hos
 # ============================ WAITING =================================================
 # ======================================================================================
 
+DURATION=$SECONDS
+echo "Execution Time (seconds): ${DURATION}" >> $OUTFILE
+
 kill -INT $PERF_PID &>/dev/null
 wait $PERF_PID
-kill -INT $BENCHMARK_PID &>/dev/null
+# kill -INT $BENCHMARK_PID &>/dev/null
 
-# wait $WBENCHMARK_PID 2>/dev/null
+echo "Waiting for the benchmark to end"
+killall loader
+wait $WBENCHMARK_PID 2>/dev/null
+echo "Waiting for the benchmark to end.. DONE"
 
 
-DURATION=$SECONDS
-echo "Execution Time (seconds): $DURATION" >>$OUTFILE
+
 cat ${STRESS_ARGS} >> $LOGFILE
 
 if [ "$user" = "sandeep" ]; then
