@@ -140,7 +140,7 @@ echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
+echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  -a $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
 echo ${BENCHHOME}/runme.sh
 
@@ -206,24 +206,30 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 echo "Wating for the server to be up."
 sleep 14
 # Run the benchmarks
+
+SECONDS=0
+
+
 ./benchmark-http.sh 127.0.0.1:8003 ${STRESS_ARGS} 2>&1 | tee ${RUNFILE}
+
+DURATION=$SECONDS
+echo "SECUREFS_TIME $DURATION sec" 
+echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
+echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
 # ======================================================================================
 # ============================ WAITING =================================================
 # ======================================================================================
 
-kill -INT $PERF_PID &>/dev/null
-wait $PERF_PID
 
 echo "Waiting for the benchmark to end"
 killall loader
-wait $WBENCHMARK_PID 2>/dev/null
+kill $BENCHMARK_PID
 echo "Waiting for the benchmark to end.. DONE"
 
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
 
-
-DURATION=$SECONDS
-echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}

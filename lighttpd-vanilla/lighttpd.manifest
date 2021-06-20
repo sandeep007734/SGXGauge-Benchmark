@@ -60,7 +60,7 @@ fs.mount.var_tmp.uri = "file:dummy-unused-by-tmpfs-uri"
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
 # size must be specified during signing. If lighttpd needs more virtual memory
 # than the enclave size, Graphene will not be able to allocate it.
-sgx.enclave_size = "32M"
+sgx.enclave_size = "128M"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more

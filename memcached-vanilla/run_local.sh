@@ -140,7 +140,7 @@ echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
+echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  -a $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
 
 echo "**************************"
@@ -199,32 +199,35 @@ YSCSB_HOME="/home/sandeep/Desktop/work/phd/SecureFS/YCSB"
 # Wait for the server to come up
 echo "Wating for the server to be up."
 sleep 14
+
+SECONDS=0
+
+
 # Load the data
 ${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
 
-SECONDS=0
 
 
 # Run
 ${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${RUNFILE}
 
+DURATION=$SECONDS
+echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
+echo "Execution Time (seconds): ${DURATION}" >> $OUTFILE
 # ======================================================================================
 # ============================ WAITING =================================================
 # ======================================================================================
 
-DURATION=$SECONDS
-echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
-echo "Execution Time (seconds): ${DURATION}" >> $OUTFILE
-
-kill -INT $PERF_PID &>/dev/null
-wait $PERF_PID
-# kill -INT $BENCHMARK_PID &>/dev/null
 
 echo "Waiting for the benchmark to end"
 killall loader
-wait $WBENCHMARK_PID 2>/dev/null
+kill $BENCHMARK_PID
+
+wait $BENCHMARK_PID 2>/dev/null
 echo "Waiting for the benchmark to end.. DONE"
 
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
 
 
 cat ${STRESS_ARGS} >> $LOGFILE

@@ -20,7 +20,7 @@ loader.log_level = "error"
 loader.env.LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu"
 loader.env.PATH = "/usr/bin:/bin"
 
-loader.pal_internal_mem_size = "64MB"
+
 sgx.enclave_size = "500M"
 sgx.thread_num = 16
 
@@ -51,10 +51,7 @@ fs.mount.etc.path = "/etc"
 fs.mount.etc.uri = "file:/etc"
 
 
-# Default glibc files, mounted from the Runtime directory in GRAPHENEDIR.
-#fs.mount.lib.type = "chroot"
-#fs.mount.lib.path = "/lib"
-#fs.mount.lib.uri = "file:/home/sandeep/Desktop/work/phd/SecureFS/graphene/Runtime"
+
 
 # Default glibc files, mounted from the Runtime directory in GRAPHENEDIR.
 fs.mount.lib.type = "chroot"

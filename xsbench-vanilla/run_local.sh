@@ -14,7 +14,7 @@ fi
 EXEC_TYPE=$1
 WORKLOAD_TYPE=$2
 user=$(who|awk '{print $1}')
-make clean; 
+# make clean; 
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
