@@ -68,7 +68,7 @@ sgx.enclave_size = "256M"
 # thread for handling inter-process communication (IPC), and potentially another
 # thread for asynchronous events. Therefore, the actual number of threads that
 # the application can create is (sgx.thread_num - 2).
-sgx.thread_num = 20
+sgx.thread_num = 16
 
 sgx.nonpie_binary = 1
 

@@ -21,8 +21,8 @@ loader.env.LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_6
 loader.env.PATH = "/usr/bin:/bin"
 
 loader.pal_internal_mem_size = "64MB"
-sgx.enclave_size = "4G"
-sgx.thread_num = 20
+sgx.enclave_size = "250M"
+sgx.thread_num = 16
 
 
 # Mounted FSes. The following "chroot" FSes mount a part of the host FS into the
