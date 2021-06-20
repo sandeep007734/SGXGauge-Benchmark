@@ -119,6 +119,8 @@ else
     CONT_PERF_EVENTS=$(cat ${TREND_DIR}/perf-trend-fmt-less)
 fi
 
+SECONDS=0
+
 $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2>&1 | tee  $LOGFILE &
 
 
@@ -140,9 +142,7 @@ while [ -z "$BENCHMARK_PID" ]; do
         echo "-------------------------------------------------------------"
 done
 
-SECONDS=0
-DURATION=$SECONDS
-SECONDS=0
+
 
 # ======================================================================================
 # ============================ CONT SETUP===============================================
@@ -172,9 +172,8 @@ done
 wait $BENCHMARK_PID 2>/dev/null
 # kill -INT $PERF_PID &>/dev/null
 
-
-
 DURATION=$SECONDS
+echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
 if [ "$user" = "sandeep" ]; then

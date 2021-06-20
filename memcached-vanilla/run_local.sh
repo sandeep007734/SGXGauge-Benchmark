@@ -203,8 +203,6 @@ sleep 14
 ${YSCSB_HOME}/bin/ycsb.sh load memcached -s -P ${STRESS_ARGS}  -p "memcached.hosts=127.0.0.1" 2>&1 | tee ${LOADFILE}
 
 SECONDS=0
-DURATION=$SECONDS
-SECONDS=0
 
 
 # Run
@@ -215,6 +213,7 @@ ${YSCSB_HOME}/bin/ycsb.sh run memcached -s -P ${STRESS_ARGS}   -p "memcached.hos
 # ======================================================================================
 
 DURATION=$SECONDS
+echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
 echo "Execution Time (seconds): ${DURATION}" >> $OUTFILE
 
 kill -INT $PERF_PID &>/dev/null

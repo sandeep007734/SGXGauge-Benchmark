@@ -56,20 +56,9 @@ fs.mount.var_tmp.path = "/var/tmp"
 fs.mount.var_tmp.uri = "file:dummy-unused-by-tmpfs-uri"
 
 # SGX general options
-
-# Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
-# size must be specified during signing. If lighttpd needs more virtual memory
-# than the enclave size, Graphene will not be able to allocate it.
 sgx.enclave_size = "32M"
-
-# Set the maximum number of enclave threads. For SGX v1, the number of enclave
-# TCSes must be specified during signing, so the application cannot use more
-# threads than the number of TCSes. Note that Graphene also creates an internal
-# thread for handling inter-process communication (IPC), and potentially another
-# thread for asynchronous events. Therefore, the actual number of threads that
-# the application can create is (sgx.thread_num - 2).
 sgx.thread_num = 16
-
+sgx.rpc_thread_num = 8
 sgx.nonpie_binary = 1
 
 # SGX trusted files

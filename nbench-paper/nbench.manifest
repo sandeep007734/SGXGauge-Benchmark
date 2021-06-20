@@ -16,8 +16,8 @@ fs.mount.lib64.type = "chroot"
 fs.mount.lib64.path = "/lib/x86_64-linux-gnu"
 fs.mount.lib64.uri = "file:/lib/x86_64-linux-gnu"
 
-sgx.enclave_size = "4G"
-sgx.thread_num = 20
+sgx.enclave_size = "256M"
+sgx.thread_num = 16
 
 sgx.allowed_files.scripts = "file:nbench"
 sgx.allowed_files.dat = "file:NNET.DAT"
