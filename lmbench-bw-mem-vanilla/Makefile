@@ -87,3 +87,7 @@ $O/EnclaveBridge.o: App/EnclaveBridge.c $(INCS)
 
 $O/bw_mem: App/bw_mem.c App/EnclaveBridge.h App/bench_app.h $O/lmbench.a
 	$(COMPILE) -o $O/bw_mem App/bw_mem.c $O/lmbench.a $(LDLIBS)
+
+bw_mem.manifest.sgx : bw_mem.manifest bin/x86_64-Linux/bw_mem
+	@echo "Building bw_mem"
+	./build_manifest_andsign.sh bw_mem

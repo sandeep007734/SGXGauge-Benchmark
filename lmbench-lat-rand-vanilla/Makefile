@@ -86,3 +86,7 @@ $O/lat_rand:  App/lat_rand.c App/EnclaveBridge.h App/bench_app.h $O/lmbench.a
 
 #$O/lat_syscall: App/lat_rand.c App/EnclaveBridge.h App/bench_app.h $O/lat_syscall.a
 #	$(COMPILE) -o $O/lat_syscall App/lat_rand.c $O/lat_syscall.a $(LDLIBS)
+
+lat_rand.manifest.sgx : lat_rand.manifest bin/x86_64-Linux/lat_rand
+	@echo "Building lat_rand"
+	./build_manifest_andsign.sh lat_rand

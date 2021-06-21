@@ -1,4 +1,9 @@
+benchmark=$1
+
 for s in LOW_ MEDIUM_ HIGH_
 do
-    sudo -H -E ./run_sgxgauge.sh $s
+    if [ "$benchmark" == "sgxgauge" ]; then
+        sudo -H -E ./run_sgxgauge.sh $s
+    else
+        sudo -H -E ./run_lmbench.sh $s
 done

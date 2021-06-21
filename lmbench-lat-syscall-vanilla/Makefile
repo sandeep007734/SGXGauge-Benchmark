@@ -87,3 +87,7 @@ $O/EnclaveBridge.o: App/EnclaveBridge.c $(INCS)
 
 $O/lat_syscall: App/lat_syscall.c App/EnclaveBridge.h App/bench_app.h $O/lmbench.a
 	$(COMPILE) -o $O/lat_syscall App/lat_syscall.c $O/lmbench.a $(LDLIBS)
+
+lat_syscall.manifest.sgx : lat_syscall.manifest bin/x86_64-Linux/lat_syscall
+	@echo "Building lat_syscall"
+	./build_manifest_andsign.sh lat_syscall
