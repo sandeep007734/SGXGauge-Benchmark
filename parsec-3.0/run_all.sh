@@ -4,7 +4,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-declare -a suite=("blackscholes" "bodytrack" "canneal" "dedup" "fluidanimate" "freqmine" "streamcluster" "swaptions" "vips")
+declare -a suite=("blackscholes" "bodytrack" "dedup" "fluidanimate" "freqmine" "streamcluster" "swaptions" "vips")
 #declare -a suite=("canneal" "streamcluster")
 for benchmark in "${suite[@]}";
 do

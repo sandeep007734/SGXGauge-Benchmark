@@ -21,11 +21,11 @@ make clean;
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    BENCH_ARGS="-N 5000"
+    BENCH_ARGS="-N 3000"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS="-N 7500"
+    BENCH_ARGS="-N 5000"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    BENCH_ARGS="-N 10000"
+    BENCH_ARGS="-N 75000"
 else
     echo "ERROR"
     exit 1
