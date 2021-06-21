@@ -106,7 +106,8 @@ fs.mount.etc.uri = "file:/etc"
 # can trigger this incorrect behavior by increasing the number of threads
 # to 12 (each thread requires 128MB of memory): `memcached -t 12`. This is
 # an issue in Memcached source code, not related to Graphene.
-sgx.enclave_size = "1024M"
+#sgx.enclave_size = "1024M"
+sgx.enclave_size ="4G"
 
 sgx.nonpie_binary = 1
 

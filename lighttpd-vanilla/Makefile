@@ -115,6 +115,8 @@
 # GRAPHENE = graphene-sgx
 # endif
 
+all:
+	@echo Not required
 lighttpd.manifest.sgx: lighttpd.manifest
 	./build_manifest_andsign.sh lighttpd
 

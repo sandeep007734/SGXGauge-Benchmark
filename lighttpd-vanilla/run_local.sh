@@ -139,8 +139,8 @@ PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
 echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
+echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  -a $LOGFILE  >> ${BENCHHOME}/runme.sh &
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  -a $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
 echo ${BENCHHOME}/runme.sh
 
@@ -204,7 +204,8 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 # ======================================================================================
 # Wait for the server to come up
 echo "Wating for the server to be up."
-sleep 14
+sleep 1s
+echo "Moving on"
 # Run the benchmarks
 
 SECONDS=0
@@ -225,6 +226,7 @@ echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 echo "Waiting for the benchmark to end"
 killall loader
 kill $BENCHMARK_PID
+sleep 10
 echo "Waiting for the benchmark to end.. DONE"
 
 kill -INT $PERF_PID &>/dev/null
