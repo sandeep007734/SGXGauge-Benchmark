@@ -11,7 +11,9 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-declare -a suite=("lmbench-lat-rand" "lmbench-lat-syscall" "lmbench-bw-mem")
+# declare -a suite=("lmbench-lat-rand" "lmbench-lat-syscall" "lmbench-bw-mem")
+# declare -a suite=("lmbench-lat-syscall" "lmbench-bw-mem")
+declare -a suite=("lmbench-bw-mem")
 
 workload_type=$1
 user=$(who|awk '{print $1}')
@@ -24,7 +26,7 @@ do
     mkdir archive
     cp -r evaluation/ archive/
     rm -r evaluation/
+    sudo -H -E ./run_local.sh 1 ${workload_type}
     sudo -H -E ./run_local.sh 3 ${workload_type}
-    #sudo -H -E ./run_local.sh 1 ${workload_type}
     cd ${CURR_DIR}
 done

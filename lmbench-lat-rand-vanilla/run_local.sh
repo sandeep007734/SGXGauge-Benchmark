@@ -17,13 +17,14 @@ WORKLOAD_TYPE=$2
 BENCH="lmbench_lat_rand"
 EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 user=$(who|awk '{print $1}')
-make clean; 
+
+# make clean; 
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     BENCH_ARGS="-N 3000"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS="-N 5000"
+    BENCH_ARGS="-N 1000"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
     BENCH_ARGS="-N 75000"
 else
@@ -33,12 +34,12 @@ fi
 
 if [ $EXEC_TYPE -eq 1 ];then
     PREFIX="SGX-GRAPHENE-${BENCH}"
-    MANIFEST_FILE="hashjoin"
+    MANIFEST_FILE="lat_rand"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=1
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS} "
 elif [ $EXEC_TYPE -eq 2 ];then
     PREFIX="SGX-PGRAPHENE-${BENCH}"
-    MANIFEST_FILE="phashjoin"
+    MANIFEST_FILE="plat_rand"
     make ${MANIFEST_FILE}.manifest.sgx NONPF=0
     CMD="graphene-sgx ${MANIFEST_FILE} ${BENCH_ARGS}  "
 elif [ $EXEC_TYPE -eq 3 ];then

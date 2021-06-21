@@ -17,13 +17,13 @@ WORKLOAD_TYPE=$2
 BENCH="lmbench_lat_syscall"
 EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 user=$(who|awk '{print $1}')
-make clean; 
+# make clean; 
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     BENCH_ARGS="-N 5000 read"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS="-N 7500 read"
+    BENCH_ARGS="-N 750 read"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
     BENCH_ARGS="-N 10000 read"
 else

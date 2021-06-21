@@ -17,13 +17,13 @@ WORKLOAD_TYPE=$2
 BENCH="lmbench_bw_mem"
 EXP_NAME="sgxgauge_$WORKLOAD_TYPE"
 user=$(who|awk '{print $1}')
-make clean; 
+# make clean; 
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
     BENCH_ARGS="-N 1000 65000000 rd"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    BENCH_ARGS="-N 1000 100000000 rd"
+    BENCH_ARGS="-N 100 1000000 rd"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
     BENCH_ARGS="-N 1000 150000000 rd"
 else
