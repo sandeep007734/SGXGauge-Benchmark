@@ -31,8 +31,8 @@ while :; do
     cat /proc/buddyinfo >> $LOG_DIR/buddyinfo
     cat /proc/pagetypeinfo >> $LOG_DIR/pagetypeinfo
 
-    if [ -f /home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/scripts/test_ioctl.o ]; then
-        /home/sandeep/Desktop/work/phd/SecureFS/securefs_bench/scripts/test_ioctl.o >> $LOG_DIR/sgxtrend
+    if [ -f /home/sandeep/Desktop/work/phd/benchmark-work/flaas-bench/scripts/test_ioctl.o ]; then
+        /home/sandeep/Desktop/work/phd/benchmark-work/flaas-bench/scripts/test_ioctl.o >> $LOG_DIR/sgxtrend
     fi
 
     cat /proc/interrupts |grep TLB >> $LOG_DIR/tlbshootdowns

@@ -21,6 +21,8 @@ struct sgxgauge_counters{
 	unsigned int nr_sgx_sec_was_evicted;
 	unsigned int nr_sgx_eldu_load;
 
+        unsigned int nr_sgx_alloc_page;
+
 };
 
 #define WR_VALUE _IOW('a','a',uint64_t*)
@@ -36,6 +38,7 @@ void sgxgauge_print_info(void){
         printf("nr_sgx_cpus_flushes: %d\n", sgxgauge_counters_i.nr_sgx_cpus_flushes);
         printf("nr_sgx_sec_was_evicted: %d\n", sgxgauge_counters_i.nr_sgx_sec_was_evicted);
         printf("nr_sgx_eldu_load: %d\n", sgxgauge_counters_i.nr_sgx_eldu_load);
+        printf("nr_sgx_alloc_page: %d\n", sgxgauge_counters_i.nr_sgx_alloc_page);
 }
 
 int main(int argc, char *argv[])
@@ -43,8 +46,9 @@ int main(int argc, char *argv[])
         int fd;
         int value, number;
         
+        
 
-        printf("SGXGauge Counters. Mode %d\n",argc);
+        printf("\nSGXGauge Counters. Mode %d\n",argc);
         // printf("\nOpening Driver\n");
 
         fd = open("/dev/isgx", O_RDWR);
@@ -55,12 +59,14 @@ int main(int argc, char *argv[])
         
         if (argc > 1){
                 number=1;
+                printf("Resetting the counters\n");
                 ioctl(fd, WR_VALUE, (uint64_t*) &number); 
         }
-        else{
-                ioctl(fd, RD_VALUE, (struct sgxgauge_counters*) &sgxgauge_counters_i);
-                sgxgauge_print_info();
-        }
+        
+        
+        ioctl(fd, RD_VALUE, (struct sgxgauge_counters*) &sgxgauge_counters_i);
+        sgxgauge_print_info();
+        
 
         close(fd);
         

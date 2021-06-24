@@ -11,9 +11,10 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-# declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree","pagerank-2")
+# declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree" "pagerank-2")
+declare -a suite=("pte-btree" "pagerank-2")
 # declare -a suite=("xsbench")
-declare -a suite=("libcatena")
+# declare -a suite=("libcatena")
 
 workload_type=$1
 user=$(who|awk '{print $1}')
@@ -22,13 +23,13 @@ CURR_DIR=$(pwd)
 
 for benchmark in "${suite[@]}";
 do
-    cd ${benchmark}-vanilla
-    mkdir archive
-    cp -r evaluation/ archive/
-    rm -r evaluation/
-    sudo -H -E ./run_local.sh 3 ${workload_type}
-    sudo -H -E ./run_local.sh 1 ${workload_type}
-    cd ${CURR_DIR}
+    # cd ${benchmark}-vanilla
+    # mkdir archive
+    # cp -r evaluation/ archive/
+    # rm -r evaluation/
+    # sudo -H -E ./run_local.sh 3 ${workload_type}
+    # sudo -H -E ./run_local.sh 1 ${workload_type}
+    # cd ${CURR_DIR}
 
     if [ "$benchmark" != "svm" ] && [ "$benchmark" != "xsbench" ]; then
         cd ${benchmark}-native
