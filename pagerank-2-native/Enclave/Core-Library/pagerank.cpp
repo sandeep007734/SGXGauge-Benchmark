@@ -213,4 +213,6 @@ int ecall_real_main()
     free(maps);
     free(page_ranks);
     free(noutlinks);
+
+    return 0;
 }

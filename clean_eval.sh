@@ -11,8 +11,8 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-# declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree")
-declare -a suite=("pagerank-2")
+declare -a suite=("bfs-2" "libcatena" "openssl" "pte-hashjoin" "pte-btree")
+# declare -a suite=("pte-btree" "pagerank-2")
 # declare -a suite=("xsbench")
 # declare -a suite=("libcatena")
 
