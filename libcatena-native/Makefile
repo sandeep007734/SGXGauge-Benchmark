@@ -65,7 +65,7 @@ endif
 endif
 
 ifeq ($(SGX_DEBUG), 1)
-        SGX_COMMON_FLAGS += -O0 -g
+        SGX_COMMON_FLAGS += -O3
 else
         SGX_COMMON_FLAGS += -O2
 endif

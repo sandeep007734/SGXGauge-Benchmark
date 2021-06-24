@@ -73,7 +73,7 @@ ifeq "20" "$(word 1, $(sort 20 $(SGXSDK_INT_VERSION)))"
 endif
 
 ifeq ($(DEBUG), 1)
-        SGX_COMMON_CFLAGS += -O0 -g
+        SGX_COMMON_CFLAGS += -O3
 		SGXSSL_Library_Name := sgx_tsgxssld
 		OpenSSL_Crypto_Library_Name := sgx_tsgxssl_cryptod
 else

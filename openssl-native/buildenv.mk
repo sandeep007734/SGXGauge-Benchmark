@@ -36,7 +36,7 @@ export OS_ID=0
 export SGX_SDK ?= /opt/intel/sgxsdk/
 export VCC := @$(CC)
 export VCXX := @$(CXX)
-DEBUG ?= 0
+DEBUG ?= 1
 $(shell mkdir -p $(PACKAGE_LIB))
 UBUNTU_CONFNAME:=/usr/include/x86_64-linux-gnu/bits/confname.h
 ifneq ("$(wildcard $(UBUNTU_CONFNAME))","")

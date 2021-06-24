@@ -63,7 +63,7 @@ endif
 
 OPENSSL_LIBRARY_PATH := $(PACKAGE_LIB)
 ifeq ($(DEBUG), 1)
-        SGX_COMMON_FLAGS += -O0 -g
+        SGX_COMMON_FLAGS += -O3
 		SgxSSL_Link_Libraries := sgx_usgxssld
 else
         SGX_COMMON_FLAGS += -O2 -D_FORTIFY_SOURCE=2
