@@ -1,10 +1,14 @@
-echo "DO NOT USE THIS. RUN SETTINGS INDIVIDUALLY AS THE EVAL FOLDERS ARE MOVED AFTER EACH SETTING RUN"
-# benchmark=$1
 
-# for s in LOW_ MEDIUM_ HIGH_
-# do
-#     if [ "$benchmark" == "sgxgauge" ]; then
-#         sudo -H -E ./run_sgxgauge.sh $s
-#     else
-#         sudo -H -E ./run_lmbench.sh $s
-# done
+rm run_log
+touch run_log
+for i in $(seq 1 10)
+do
+    echo $i  >> run_log
+    for s in LOW_ MEDIUM_ HIGH_
+    do
+        echo $s >> run_log
+        sudo -H -E ./run_sgxgauge.sh $s
+    done
+done
+
+poweroff

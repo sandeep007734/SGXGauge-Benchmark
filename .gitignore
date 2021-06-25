@@ -18,3 +18,4 @@ app
 */bin/*
 pagerank-2-native/pages_medium.dat
 openssl-native/datax.csv
+run_log
