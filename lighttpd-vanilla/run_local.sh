@@ -27,11 +27,11 @@ user=$(who|awk '{print $1}')
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    STRESS_ARGS="10000"
+    STRESS_ARGS="50000"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    STRESS_ARGS="20000"
+    STRESS_ARGS="60000"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    STRESS_ARGS="300000"
+    STRESS_ARGS="700000"
 else
     echo "ERROR"
     exit 1
@@ -204,7 +204,11 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 # ======================================================================================
 # Wait for the server to come up
 echo "Wating for the server to be up."
-sleep 1s
+if [ $EXEC_TYPE -eq 1 ];then
+    sleep 20s
+else
+    sleep 1s
+fi
 echo "Moving on"
 # Run the benchmarks
 
@@ -231,7 +235,6 @@ echo "Waiting for the benchmark to end.. DONE"
 
 kill -INT $PERF_PID &>/dev/null
 wait $PERF_PID
-
 
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}

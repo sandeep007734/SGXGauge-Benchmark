@@ -27,11 +27,11 @@ user=$(who|awk '{print $1}')
 make WORKLOAD_TYPE=${WORKLOAD_TYPE}
 
 if [ "$WORKLOAD_TYPE" = "LOW_" ]; then
-    STRESS_ARGS="10000"
+    STRESS_ARGS="50000"
 elif [ "$WORKLOAD_TYPE" = "MEDIUM_" ]; then
-    STRESS_ARGS="20000"
+    STRESS_ARGS="60000"
 elif [ "$WORKLOAD_TYPE" = "HIGH_" ]; then
-    STRESS_ARGS="300000"
+    STRESS_ARGS="700000"
 else
     echo "ERROR"
     exit 1
@@ -139,8 +139,8 @@ PERF_EVENTS=$(cat ${TREND_DIR}/perf-all-fmt)
 echo ""
 echo "#!/bin/bash" > ${BENCHHOME}/runme.sh
 echo "if [[ \$EUID -ne 0 ]];then echo "Please run as root. sudo -H -E"; exit 1;  fi" >> ${BENCHHOME}/runme.sh
+echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  -a $LOGFILE  >> ${BENCHHOME}/runme.sh &
 echo "touch ${TMP_FILE}" >> ${BENCHHOME}/runme.sh
-echo $PERF stat -x, -o $OUTFILE -e $PERF_EVENTS  $CMD 2\>\&1 \| tee  $LOGFILE  >> ${BENCHHOME}/runme.sh
 chmod +x ${BENCHHOME}/runme.sh
 echo ${BENCHHOME}/runme.sh
 
@@ -179,6 +179,8 @@ done
 PERF_PID=$(ps aux|grep 'usr/bin/perf stat -x'|grep -v color|grep -v 'grep'|awk '{print $2}')
 echo "Main PERF PID is ${PERF_PID}"
 
+SECONDS=0
+
 # ======================================================================================
 # ============================ CONT SETUP===============================================
 # ======================================================================================
@@ -202,15 +204,21 @@ ${TREND_DIR}/capture.sh $BENCHMARK_PID $MAIN_DIR $SLEEP_DURATION &
 # ======================================================================================
 # Wait for the server to come up
 echo "Wating for the server to be up."
-sleep 20
-
+if [ $EXEC_TYPE -eq 1 ];then
+    sleep 20s
+else
+    sleep 1s
+fi
+echo "Moving on"
+# Run the benchmarks
 
 SECONDS=0
 
-# Run the benchmarks
+
 ./benchmark-http.sh 127.0.0.1:8003 ${STRESS_ARGS} 2>&1 | tee ${RUNFILE}
 
 DURATION=$SECONDS
+echo "SECUREFS_TIME $DURATION sec" 
 echo "SECUREFS_TIME $DURATION sec"  >> $LOGFILE
 echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 
@@ -218,17 +226,15 @@ echo "Execution Time (seconds): $DURATION" >>$OUTFILE
 # ============================ WAITING =================================================
 # ======================================================================================
 
-kill -INT $PERF_PID &>/dev/null
-wait $PERF_PID
 
 echo "Waiting for the benchmark to end"
 killall loader
-wait $WBENCHMARK_PID 2>/dev/null
+kill $BENCHMARK_PID
+sleep 10
 echo "Waiting for the benchmark to end.. DONE"
 
-
-
-
+kill -INT $PERF_PID &>/dev/null
+wait $PERF_PID
 
 if [ "$user" = "sandeep" ]; then
     ${TREND_DIR}/test_ioctl.o  &>> ${SGXFILE}

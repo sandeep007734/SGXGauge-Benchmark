@@ -10,14 +10,15 @@ declare -A THROUGHPUTS
 declare -A LATENCIES
 LOOP=${LOOP:-1}
 DOWNLOAD_HOST=$1
-DOWNLOAD_FILE=random/10K.1.html
+DOWNLOAD_FILE=random/20K.1.html
 REQUESTS=$2
-CONCURRENCY_LIST=${CONCURRENCY_LIST:-"1 2 4 8 16 32 64 128 256"}
+# CONCURRENCY_LIST=${CONCURRENCY_LIST:-"1 2 4 8 16 32 64 128 256"}
+echo "Using 16 threads only"
+CONCURRENCY_LIST=${CONCURRENCY_LIST:-"16"}
 OPTIONS="-k"
 RESULT=result-$(date +%y%m%d-%H%M%S)
 
 touch "$RESULT"
-SECONDS=0
 RUN=0
 while [ $RUN -lt "$LOOP" ]
 do
@@ -47,6 +48,4 @@ do
 done
 
 echo "Result file: $RESULT"
-
 cat $RESULT
-rm $RESULT

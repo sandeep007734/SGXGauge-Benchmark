@@ -1,9 +1,12 @@
-for s in LOW_ MEDIUM_ HIGH_
-do
-    sudo -H -E ./run_local.sh 3 $s
-done
+# for s in LOW_ MEDIUM_ HIGH_
+# do
+#     sudo -H -E ./run_local.sh 1 $s
+# done
 
-for s in LOW_ MEDIUM_ HIGH_
+for i in $(seq 1 10)
 do
-    sudo -H -E ./run_local.sh 1 $s
+    for s in LOW_ MEDIUM_ HIGH_
+    do
+        sudo -H -E ./run_local.sh 3 $s
+    done
 done
