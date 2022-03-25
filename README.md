@@ -1,4 +1,5 @@
-#Publication
+Publication
+===============
 
 This work is published in ISPASS 2022.
 
@@ -24,14 +25,19 @@ Furthermore, each of the benchmark is configured to have three input settings: L
 | LOW_ | < EPC |
 | MEDIUM_ | = EPC |
 | HIGH_ | > EPC |
+
 Note: EPC is considered to 92MB.
 
-#Organization
+Organization
+===============
+
 The following convention is used to denote each directory:
 <benchmark-name>-native: The ported version of the corresponding benchmark is contained in this directory.
 <benchmark-name>-vanilla: The non-SGX and LibOS versions of the corresponding benchmark are contained in this directory.
 
-#Execution Instructions
+Execution Instructions
+===============
+
 Only non-SGX and LibOS versions are available for the following benchmarks: Lighttpd, SVM, XSBench, and Memcached. Please refer to the following guidelines to execute it:
 
 1. To execute LibOS version of any of the benchmarks, you need to execute the following command from the correspoding workload's directory: sudo -H -E ./run_local.sh 1 <Setting>
