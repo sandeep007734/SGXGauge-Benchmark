@@ -39,11 +39,8 @@ Execution Instructions
 ===============
 
 Only non-SGX and LibOS versions are available for the following benchmarks: Lighttpd, SVM, XSBench, and Memcached. Please refer to the following guidelines to execute it:
-
 1. To execute LibOS version of any of the benchmarks, you need to execute the following command from the correspoding workload's directory: sudo -H -E ./run_local.sh 1 <Setting>
-
 2. To execute non-SGX version of any of the benchmarks, you need to execute the following command from the correspoding workload's directory: sudo -H -E ./run_local.sh 3 <Setting>
-
 3. Refer run_local.sh script present in the benchmark's directory to adjust the input size.
 
 Ported, non-SGX and LibOS versions are available for the following benchmarks: BlockChain, OpenSSL, B-Tree, HashJoin, BFS and PageRank. Please refer to the following guidelines to execute it:
